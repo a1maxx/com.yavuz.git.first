@@ -5,7 +5,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
 public class Bus {
-
+	private int a;
 	private int type;
 	private RealMatrix admittance;
 	private RealMatrix theta;
