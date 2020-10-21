@@ -1,6 +1,6 @@
 package nRalgorithm;
 
-import org.apache.commons.lang3.reflect.TypeUtilsTest.This;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -8,13 +8,13 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 public class Bus {
 	
-	private int type;
+	public int type;
 	private RealMatrix admittance;
 	private RealMatrix theta;
 	double p, q;
 	public DerivativeStructure voltage;
 	public DerivativeStructure delta;
-	private int index;
+	public int index;
 	int order = 2;
 	double initialValue_d = 0.0;
 	double initialValue_v = 1.0;
@@ -37,8 +37,7 @@ public class Bus {
 
 	}
 
-	
-	
+		
 //	Dummy Constructors
 	public Bus() {
 
@@ -102,7 +101,7 @@ public class Bus {
 
 	
 	
-//	Determination of the unknows
+//	Determination of the unknowns
 	DerivativeStructure[] detectUnknowns(Bus[] buses) {
 
 		DerivativeStructure unknowns[] = new DerivativeStructure[this.admittance.getRowDimension()];
@@ -128,9 +127,9 @@ public class Bus {
 	public String toString() {
 		
 		StringBuilder sb =  new StringBuilder();
-		sb.append("This is Bus with type of ");
+		sb.append("This is Bus with the type of ");
 		sb.append(this.type);
-		sb.append("\n Index of the bus is ");
+		sb.append("\nIndex of the bus is ");
 		sb.append(this.index);
 		return sb.toString();
 		
