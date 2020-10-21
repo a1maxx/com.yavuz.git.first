@@ -103,18 +103,18 @@ public class Main {
 
 		
 		DerivativeStructure[] equations = Bus.createEqauations(buses);
-		System.out.println(equations[0].getValue() + ">>>>>>" + fp2.getValue());
-		System.out.println(equations[2].getValue() + ">>>>>>" + fp3.getValue());
-		System.out.println(equations[1].getValue() + ">>>>>>" + fq2.getValue());
-		System.out.println(equations[2].getValue() + ">>>>>>" + fp3.getValue());
-		System.out.println(equations[1].getValue() + ">>>>>>" + fq2.getValue());
-		
-		System.out.println(equations[0].getPartialDerivative(0, 0, 1, 0, 0, 0)+ ">>>>>>" + fp2.getPartialDerivative(1, 0, 0, 0,0,0));
-		System.out.println(equations[0].getPartialDerivative(0, 0, 0, 0, 1, 0)+ ">>>>>>" + fp2.getPartialDerivative(0, 1, 0, 0,0,0));
-		System.out.println(equations[0].getPartialDerivative(0, 0, 0, 1, 0, 0)+ ">>>>>>" + fp2.getPartialDerivative(0, 0, 1, 0,0,0));
-		System.out.println(equations[1].getPartialDerivative(0, 0, 1, 0, 0, 0)+ ">>>>>>" + fq2.getPartialDerivative(1, 0, 0, 0,0,0));
-		System.out.println(equations[1].getPartialDerivative(0, 0, 0, 0, 1, 0)+ ">>>>>>" + fq2.getPartialDerivative(0, 1, 0, 0,0,0));
-		System.out.println(equations[1].getPartialDerivative(0, 0, 0, 1, 0, 0)+ ">>>>>>" + fq2.getPartialDerivative(0, 0, 1, 0,0,0));
+//		System.out.println(equations[0].getValue() + ">>>>>>" + fp2.getValue());
+//		System.out.println(equations[2].getValue() + ">>>>>>" + fp3.getValue());
+//		System.out.println(equations[1].getValue() + ">>>>>>" + fq2.getValue());
+//		System.out.println(equations[2].getValue() + ">>>>>>" + fp3.getValue());
+//		System.out.println(equations[1].getValue() + ">>>>>>" + fq2.getValue());
+//		
+//		System.out.println(equations[0].getPartialDerivative(0, 0, 1, 0, 0, 0)+ ">>>>>>" + fp2.getPartialDerivative(1, 0, 0, 0,0,0));
+//		System.out.println(equations[0].getPartialDerivative(0, 0, 0, 0, 1, 0)+ ">>>>>>" + fp2.getPartialDerivative(0, 1, 0, 0,0,0));
+//		System.out.println(equations[0].getPartialDerivative(0, 0, 0, 1, 0, 0)+ ">>>>>>" + fp2.getPartialDerivative(0, 0, 1, 0,0,0));
+//		System.out.println(equations[1].getPartialDerivative(0, 0, 1, 0, 0, 0)+ ">>>>>>" + fq2.getPartialDerivative(1, 0, 0, 0,0,0));
+//		System.out.println(equations[1].getPartialDerivative(0, 0, 0, 0, 1, 0)+ ">>>>>>" + fq2.getPartialDerivative(0, 1, 0, 0,0,0));
+//		System.out.println(equations[1].getPartialDerivative(0, 0, 0, 1, 0, 0)+ ">>>>>>" + fq2.getPartialDerivative(0, 0, 1, 0,0,0));
 
 		for (int i = 1; i <= 5; i++) {
 			equations = Bus.createEqauations(buses);
@@ -133,7 +133,7 @@ public class Main {
 			RealMatrix J = new Array2DRowRealMatrix(jacobs);
 			double[] functions0 = { equations[0].getValue(), equations[2].getValue(), equations[1].getValue() };
 			RealMatrix fx0 = new Array2DRowRealMatrix(functions0);
-			System.out.println(fx0);
+//			System.out.println(fx0);
 			RealMatrix JI = MatrixUtils.inverse(J);
 			X0 = X0.subtract(JI.multiply(fx0));
 			buses[1].delta = new DerivativeStructure(params, order, 2, X0.getEntry(0, 0));
@@ -144,6 +144,8 @@ public class Main {
 			System.out.printf("\tv2 = %7.6f \t iteration %d %n", X0.getEntry(2, 0), i);
 			System.out.printf("%s%n", "--------------------------------------------");
 		}
+		
+
 
 //		for (int i = 1; i <= 10; i++) {
 //			DerivativeStructure d2 = new DerivativeStructure(params, order, 0, d2RealValue);
