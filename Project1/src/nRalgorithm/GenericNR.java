@@ -19,7 +19,7 @@ public class GenericNR {
 		double[][] theta = { { 11, 12, 13 }, { 21, 22, 23 }, { 31, 32, 33 } };
 		int params = 6;
 		int order = 2;
-
+		System.out.println("gitCheck");
 		buses.add(new Bus(3, admittances, theta, 0, 0, 0));
 		buses.add(new Bus(0, admittances, theta, 2, -0.9, -0.5));
 		buses.add(new Bus(1, admittances, theta, 4, 0.6, 0));
