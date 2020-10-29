@@ -74,12 +74,12 @@ public class Test {
 					{ equations[0].getPartialDerivative(0, 0, 1, 0, 0, 0),
 							equations[0].getPartialDerivative(0, 0, 0, 0, 1, 0),
 							equations[0].getPartialDerivative(0, 0, 0, 1, 0, 0) },
-					{ equations[2].getPartialDerivative(0, 0, 1, 0, 0, 0),
-							equations[2].getPartialDerivative(0, 0, 0, 0, 1, 0),
-							equations[2].getPartialDerivative(0, 0, 0, 1, 0, 0) },
 					{ equations[1].getPartialDerivative(0, 0, 1, 0, 0, 0),
 							equations[1].getPartialDerivative(0, 0, 0, 0, 1, 0),
-							equations[1].getPartialDerivative(0, 0, 0, 1, 0, 0) } };
+							equations[1].getPartialDerivative(0, 0, 0, 1, 0, 0) },
+					 {equations[2].getPartialDerivative(0, 0, 1, 0, 0, 0),
+						equations[2].getPartialDerivative(0, 0, 0, 0, 1, 0),
+						equations[2].getPartialDerivative(0, 0, 0, 1, 0, 0) } };
 			RealMatrix J = new Array2DRowRealMatrix(jacobs);
 			double[] functions0 = { equations[0].getValue(), equations[2].getValue(), equations[1].getValue() };
 			RealMatrix fx0 = new Array2DRowRealMatrix(functions0);

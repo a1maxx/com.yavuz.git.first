@@ -47,5 +47,33 @@ public class GenericNR {
 		}
 	return orders;	
 	}
+	
+	static ArrayList<Double> calculateUnknows(ArrayList<Bus> buses) {
+		ArrayList<Double> unknowns = new ArrayList<Double>();
+		for(Bus b : buses ) {
+			
+			switch (b.type) {
+				case 0:
+					Double temp = b.delta.getValue();
+					unknowns.add(temp);
+					temp = b.voltage.getValue();
+					unknowns.add(temp);
+					break;
+				case 1:
+					temp = b.delta.getValue();
+					unknowns.add(temp);
+					break;
+				case 2:
+					temp = b.voltage.getValue();
+					unknowns.add(temp);
+					break;
+				default:
+
+			}
+			
+		}
+		
+	return unknowns;	
+	}
 
 }
