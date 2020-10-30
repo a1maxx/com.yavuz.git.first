@@ -62,9 +62,9 @@ public class Test {
 		buses.get(0).voltage = new DerivativeStructure(params, order, 1, 1.0);
 		buses.get(0).delta = new DerivativeStructure(params, order, 0, 0);
 		buses.get(2).voltage = new DerivativeStructure(params, order, 5, 1.01);
-		DerivativeStructure[] equations = Bus.createEqauations2(buses);
+		DerivativeStructure[] equations = Bus.createEquations2(buses);
 		for (int i = 1; i <= 4; i++) {
-			equations = Bus.createEqauations2(buses);
+			equations = Bus.createEquations2(buses);
 			ArrayList<Double> unknowns0 = GenericNR.calculateUnknows(buses);
 			X0 = new Array2DRowRealMatrix(GenericNR.convertArray(unknowns0));
 			ArrayList<Integer[]> orders = GenericNR.createOrders(buses);

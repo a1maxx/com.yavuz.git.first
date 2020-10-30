@@ -139,7 +139,7 @@ public class Bus {
 		
 	}
 	
-	static DerivativeStructure[] createEqauations2(ArrayList<Bus> buses) {
+	static DerivativeStructure[] createEquations2(ArrayList<Bus> buses) {
 		int l = 0;
 		DerivativeStructure equations[] = new DerivativeStructure[buses.size()];
 		for (int k = 0; k < buses.size(); k++) {
