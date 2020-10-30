@@ -144,7 +144,7 @@ public class Main {
 			System.out.printf("\tv2 = %7.6f \t iteration %d %n", X0.getEntry(2, 0), i);
 			System.out.printf("%s%n", "--------------------------------------------");
 		}
-		
+
 
 
 //		for (int i = 1; i <= 10; i++) {

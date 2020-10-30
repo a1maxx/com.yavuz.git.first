@@ -67,9 +67,9 @@ public class Test {
 
 		for (int i = 1; i <= 5; i++) {
 			equations = Bus.createEqauations2(buses);
-			double[] unknowns0 = {buses.get(1).delta.getValue(), buses.get(2).delta.getValue(),
-					buses.get(1).voltage.getValue() };
-			X0 = new Array2DRowRealMatrix(unknowns0);
+			ArrayList<Double> unknowns0 = GenericNR.calculateUnknows(buses);
+			
+			X0 = new Array2DRowRealMatrix(GenericNR.convertArray(unknowns0));
 			double[][] jacobs = {
 					{ equations[0].getPartialDerivative(0, 0, 1, 0, 0, 0),
 							equations[0].getPartialDerivative(0, 0, 0, 0, 1, 0),
