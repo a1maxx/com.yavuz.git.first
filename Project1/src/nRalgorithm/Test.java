@@ -2,6 +2,7 @@ package nRalgorithm;
 
 import java.util.ArrayList;
 
+
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -9,7 +10,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
 
-public class Test {	
+public class Test {
 
 	public static void main(String[] args) {
 
@@ -19,7 +20,7 @@ public class Test {
 			}
 
 		};
-
+	
 
 		// Ybus elements
 		double Y11, Y12, Y13, Y21, Y22, Y23, Y31, Y32, Y33;
@@ -50,7 +51,6 @@ public class Test {
 		int params = 6;
 		int order = 2;
 
-
 		RealMatrix X0 = new Array2DRowRealMatrix();
 		double[][] admittances = { { Y11, Y12, Y13 }, { Y21, Y22, Y23 }, { Y31, Y32, Y33 } };
 		double[][] theta = { { t11, t12, t13 }, { t21, t22, t23 }, { t31, t32, t33 } };
@@ -62,39 +62,27 @@ public class Test {
 		buses.get(0).voltage = new DerivativeStructure(params, order, 1, 1.0);
 		buses.get(0).delta = new DerivativeStructure(params, order, 0, 0);
 		buses.get(2).voltage = new DerivativeStructure(params, order, 5, 1.01);
-
 		DerivativeStructure[] equations = Bus.createEqauations2(buses);
-
-		for (int i = 1; i <= 5; i++) {
+		for (int i = 1; i <= 4; i++) {
 			equations = Bus.createEqauations2(buses);
 			ArrayList<Double> unknowns0 = GenericNR.calculateUnknows(buses);
-			
 			X0 = new Array2DRowRealMatrix(GenericNR.convertArray(unknowns0));
-			double[][] jacobs = {
-					{ equations[0].getPartialDerivative(0, 0, 1, 0, 0, 0),
-							equations[0].getPartialDerivative(0, 0, 0, 0, 1, 0),
-							equations[0].getPartialDerivative(0, 0, 0, 1, 0, 0) },
-					{ equations[1].getPartialDerivative(0, 0, 1, 0, 0, 0),
-							equations[1].getPartialDerivative(0, 0, 0, 0, 1, 0),
-							equations[1].getPartialDerivative(0, 0, 0, 1, 0, 0) },
-					 {equations[2].getPartialDerivative(0, 0, 1, 0, 0, 0),
-						equations[2].getPartialDerivative(0, 0, 0, 0, 1, 0),
-						equations[2].getPartialDerivative(0, 0, 0, 1, 0, 0) } };
+			ArrayList<Integer[]> orders = GenericNR.createOrders(buses);
+			double[][] jacobs = GenericNR.calculateJacobian(orders, equations);
 			RealMatrix J = new Array2DRowRealMatrix(jacobs);
-			double[] functions0 = { equations[0].getValue(), equations[2].getValue(), equations[1].getValue() };
+			double[] functions0 = GenericNR.calculateFunctions(equations);
 			RealMatrix fx0 = new Array2DRowRealMatrix(functions0);
-
 			RealMatrix JI = MatrixUtils.inverse(J);
 			X0 = X0.subtract(JI.multiply(fx0));
-			buses.get(1).delta = new DerivativeStructure(params, order, 2, X0.getEntry(0, 0));
-			buses.get(1).voltage = new DerivativeStructure(params, order, 3, X0.getEntry(2, 0));
-			buses.get(2).delta = new DerivativeStructure(params, order, 4, X0.getEntry(1, 0));
+			GenericNR.updateUnknowns(X0, params, order, orders, buses);
 			System.out.printf("\td2 = %7.6f \t iteration %d %n", X0.getEntry(0, 0), i);
-			System.out.printf("\td3 = %7.6f \t iteration %d %n", X0.getEntry(1, 0), i);
-			System.out.printf("\tv2 = %7.6f \t iteration %d %n", X0.getEntry(2, 0), i);
+			System.out.printf("\tv2 = %7.6f \t iteration %d %n", X0.getEntry(1, 0), i);
+			System.out.printf("\td3 = %7.6f \t iteration %d %n", X0.getEntry(2, 0), i);
 			System.out.printf("%s%n", "--------------------------------------------");
 		}
 
 	}
 
+
 }
+

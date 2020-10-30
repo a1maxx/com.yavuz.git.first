@@ -3,6 +3,10 @@ package nRalgorithm;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.linear.RealMatrix;
+
 public class GenericNR {
 
 	public static void main(String[] Args) {
@@ -84,4 +88,42 @@ public class GenericNR {
 		return dArray;
 	}
 
+	static double[][] calculateJacobian(ArrayList<Integer[]> orders, DerivativeStructure[] equations) {
+		double[][] jacobian = new double[equations.length][orders.size()];
+		for (int i = 0; i < equations.length; i++) {
+			for (int j = 0; j < orders.size(); j++) {
+				jacobian[i][j] = equations[i].getPartialDerivative(ArrayUtils.toPrimitive(orders.get(j)));
+			}
+		}
+		return jacobian;
+	}
+
+	static double[] calculateFunctions(DerivativeStructure[] equations) {
+		double[] values = new double[equations.length];
+		for (int i = 0; i < equations.length; i++) {
+			values[i] = equations[i].getValue();
+		}
+		return values;
+	}
+
+	static void updateUnknowns(RealMatrix X0, int params, int order, ArrayList<Integer[]> orders,
+			ArrayList<Bus> buses) {
+		int j = 0;
+		for (Integer[] o : orders) {
+			int k = Arrays.asList(o).indexOf(1);
+			if (k % 2 == 0) {
+				buses.get(k / 2).delta = new DerivativeStructure(params, order, k, X0.getEntry(j, 0));
+				j++;
+			} else if (k % 2 == 1) {
+				buses.get(k / 2).voltage = new DerivativeStructure(params, order, k, X0.getEntry(j, 0));
+				j++;
+			}
+
+		}
+	}
+	
+	static void update(ArrayList<Double> arr) {
+		arr.add(3.0);
+		
+	}
 }
