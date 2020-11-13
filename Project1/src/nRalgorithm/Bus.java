@@ -1,6 +1,8 @@
 package nRalgorithm;
 
 
+import java.util.ArrayList;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -63,6 +65,7 @@ public class Bus {
 								.multiply(buses[i].voltage).multiply(
 										(buses[k].delta.negate().add(buses[k].theta.getEntry(k, i)).add(buses[i].delta))
 												.sin()));
+						
 
 					} else if (buses[k].type == 1) {
 						equationP = equationP.add(buses[k].voltage.multiply(buses[k].admittance.getEntry(k, i))
@@ -134,6 +137,60 @@ public class Bus {
 		return sb.toString();
 		
 		
+	}
+	
+	static DerivativeStructure[] createEquations2(ArrayList<Bus> buses) {
+		int l = 0;
+		DerivativeStructure equations[] = new DerivativeStructure[buses.size()];
+		for (int k = 0; k < buses.size(); k++) {
+			DerivativeStructure equationP = new DerivativeStructure(6, 2);
+			DerivativeStructure equationQ = new DerivativeStructure(6, 2);
+			for (int i = 0; i < buses.size(); i++) {
+				if (buses.get(k).admittance.getEntry(k, i) != 0) {
+					if (buses.get(k).type == 0) {
+						equationP = equationP.add(buses.get(k).voltage.multiply(buses.get(k).admittance.getEntry(k, i))
+								.multiply(buses.get(i).voltage).multiply(
+										(buses.get(k).delta.negate().add(buses.get(k).theta.getEntry(k, i)).add(buses.get(i).delta))
+												.cos()));
+
+						equationQ = equationQ.add(buses.get(k).voltage.multiply(-buses.get(k).admittance.getEntry(k, i))
+								.multiply(buses.get(i).voltage).multiply(
+										(buses.get(k).delta.negate().add(buses.get(k).theta.getEntry(k, i)).add(buses.get(i).delta))
+												.sin()));
+
+					} else if (buses.get(k).type == 1) {
+						equationP = equationP.add(buses.get(k).voltage.multiply(buses.get(k).admittance.getEntry(k, i))
+								.multiply(buses.get(i).voltage).multiply(
+										(buses.get(k).delta.negate().add(buses.get(k).theta.getEntry(k, i)).add(buses.get(i).delta))
+												.cos()));
+
+					} else if (buses.get(k).type == 2) {
+						equationQ = equationQ.add(buses.get(k).voltage.multiply(buses.get(k).admittance.getEntry(k, i))
+								.multiply(buses.get(i).voltage).multiply(
+										(buses.get(k).delta.negate().add(buses.get(k).theta.getEntry(k, i)).add(buses.get(i).delta))
+												.sin()));
+
+					} else if (buses.get(k).type == 3) {
+						buses.get(k).slack = true;
+					}
+
+				}
+			}
+			if (buses.get(k).type == 0) {
+				equations[l] = equationP.subtract(buses.get(k).p);
+				l++;
+				equations[l] = equationQ.subtract(buses.get(k).q);
+				l++;
+			} else if (buses.get(k).type == 1) {
+				equations[l] = equationP.subtract(buses.get(k).p);
+				l++;
+			} else if (buses.get(k).type == 2) {
+				equations[l] = equationQ.subtract(buses.get(k).q);;
+				l++;
+			}
+
+		}
+		return equations;
 	}
 
 }
