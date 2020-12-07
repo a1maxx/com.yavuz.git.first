@@ -26,6 +26,7 @@ public class Sketch {
 		System.out.println(Arrays.asList(a).indexOf(3));
 		GenericNR.update(unknowns);
 		Complex c = new Complex(1,5);
+		
 		System.out.println(c.conjugate().multiply(c));
 		System.out.println(c.getReal());
 		System.out.println(c.getImaginary());

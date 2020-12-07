@@ -21,6 +21,9 @@ public class Bus {
 	double initialValue_d = 0.0;
 	double initialValue_v = 1.0;
 	boolean slack = false;
+	
+	double mp;
+	double nq;
 
 	
 //	Constructor of the bus objects 	
