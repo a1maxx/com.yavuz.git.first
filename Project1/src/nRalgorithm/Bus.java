@@ -26,7 +26,7 @@ public class Bus {
 	double nq;
 
 	
-//	Constructor of the bus objects 	
+//	Constructor of the bus objects 
 	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q) {
 		this.type = type;
 		// int params = admittance.length;
@@ -36,7 +36,24 @@ public class Bus {
 		this.index = index;
 		this.p = P;
 		this.q = Q;
-		
+		this.mp = 0.5;
+		this.nq = 0.5;
+		delta = new DerivativeStructure(params, order, index, initialValue_d);
+		voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
+
+	}
+
+	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q,double NQ,double MP) {
+		this.type = type;
+		// int params = admittance.length;
+		int params = 6;
+		this.admittance = new Array2DRowRealMatrix(admittance);
+		this.theta = new Array2DRowRealMatrix(theta);
+		this.index = index;
+		this.p = P;
+		this.q = Q;
+		this.nq = NQ;
+		this.mp = MP;
 		delta = new DerivativeStructure(params, order, index, initialValue_d);
 		voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
 
