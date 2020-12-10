@@ -122,8 +122,5 @@ public class GenericNR {
 		}
 	}
 	
-	static void update(ArrayList<Double> arr) {
-		arr.add(3.0);
-		
-	}
+
 }

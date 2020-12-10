@@ -215,32 +215,5 @@ public class Bus {
 	
 	
 	
-	static ArrayList<ArrayList<DerivativeStructure>> createEquations3(ArrayList<Bus> buses) {
-		ArrayList<ArrayList<DerivativeStructure>> pq = new ArrayList<ArrayList<DerivativeStructure>>();
-		ArrayList<DerivativeStructure> p = new ArrayList<DerivativeStructure>();
-		ArrayList<DerivativeStructure> q = new ArrayList<DerivativeStructure>();
-		for (int k = 1; k < buses.size(); k++) {
-			DerivativeStructure equationP = new DerivativeStructure(buses.size()*2, 2);
-			DerivativeStructure equationQ = new DerivativeStructure(buses.size()*2, 2);
-			for (int i = 0; i < buses.size(); i++) {
-				if (buses.get(k).admittance.getEntry(k, i) != 0) {
-					equationP = equationP.add(buses.get(k).voltage.multiply(buses.get(k).admittance.getEntry(k, i))
-							.multiply(buses.get(i).voltage).multiply((buses.get(k).delta.negate()
-									.add(buses.get(k).theta.getEntry(k, i)).add(buses.get(i).delta)).cos()));
 
-					equationQ = equationQ.add(buses.get(k).voltage.multiply(-buses.get(k).admittance.getEntry(k, i))
-							.multiply(buses.get(i).voltage).multiply((buses.get(k).delta.negate()
-									.add(buses.get(k).theta.getEntry(k, i)).add(buses.get(i).delta)).sin()));
-
-				}
-				
-			}
-
-			p.add(equationP.subtract(buses.get(k).p));
-			q.add(equationQ.subtract(buses.get(k).q));
-		}
-		pq.add(p);
-		pq.add(q);
-		return pq;
-	}
 }
