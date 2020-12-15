@@ -13,15 +13,7 @@ import org.apache.commons.math3.util.FastMath;
 public class Test {
 
 	public static void main(String[] args) {
-
-		MultivariateFunction p = new MultivariateFunction() {
-			public double value(double[] x) {
-				return FastMath.pow(x[0], 2) + FastMath.pow(x[1], 2);
-			}
-
-		};
 	
-
 		// Ybus elements
 		double Y11, Y12, Y13, Y21, Y22, Y23, Y31, Y32, Y33;
 		Y11 = -14;
@@ -63,9 +55,10 @@ public class Test {
 		buses.get(0).delta = new DerivativeStructure(params, order, 0, 0);
 		buses.get(2).voltage = new DerivativeStructure(params, order, 5, 1.01);
 		DerivativeStructure[] equations = Bus.createEquations2(buses);
+		
 		for (int i = 1; i <= 5; i++) {
 			equations = Bus.createEquations2(buses);
-			ArrayList<Double> unknowns0 = GenericNR.calculateUnknows(buses);
+			ArrayList<Double> unknowns0 = GenericNR.calculateUnknowns(buses);
 			X0 = new Array2DRowRealMatrix(GenericNR.convertArray(unknowns0));
 			ArrayList<Integer[]> orders = GenericNR.createOrders(buses);
 			double[][] jacobs = GenericNR.calculateJacobian(orders, equations);

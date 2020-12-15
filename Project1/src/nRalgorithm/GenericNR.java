@@ -50,7 +50,7 @@ public class GenericNR {
 		return orders;
 	}
 
-	static ArrayList<Double> calculateUnknows(ArrayList<Bus> buses) {
+	static ArrayList<Double> calculateUnknowns(ArrayList<Bus> buses) {
 		ArrayList<Double> unknowns = new ArrayList<Double>();
 		for (Bus b : buses) {
 

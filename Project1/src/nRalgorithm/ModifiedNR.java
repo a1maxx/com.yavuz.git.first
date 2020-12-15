@@ -58,38 +58,44 @@ public class ModifiedNR {
 		for (int i = 0; i < 3; i++) {
 			ArrayList<Admittance> temp0 = new ArrayList<>();
 			for (int j = 0; j < 3; j++) {
-				Admittance temp1 = new Admittance(2, 0.254);
+				Admittance temp1 = new Admittance(0.002, 0.0001);
 				temp0.add(temp1);
 			}
 			admittanceS.add(temp0);
 		}
 		
 		ArrayList<Bus> buses = new ArrayList<Bus>();
-		buses.add(new Bus(2, admittances, theta, 0, 1.0, 0.95,1.02,0.0022));
-		buses.get(0).mp = 9.4e-5;
-		buses.get(0).nq = 0.0013;
-		buses.add(new Bus(2, admittances, theta, 2, 0, 0,1.01,0.0024));
-		buses.add(new Bus(1, admittances, theta, 4, -0.6, -0.4,0.97,0.0014));
-		buses.get(0).voltage = new DerivativeStructure(params, order, 1, 1.0);
-		buses.get(0).delta = new DerivativeStructure(params, order, 0, 0.9999);
-		buses.get(2).voltage = new DerivativeStructure(params, order, 5, 1.01);
+		buses.add(new Bus(2, admittances, theta, 0, 0, 0,1.02,0));
+		buses.add(new Bus(2, admittances, theta, 2, 0, 0,1.01,0));
+		buses.add(new Bus(1, admittances, theta, 4, -0.6, -0.372,0.97,0.0014));
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes =identifyNet(buses);
-		double w0 = 0;
+		double w0 = 1;
 		double v0 = 1;
-		
 		double wi = 1;
 		double v1 = 1;
 		RealMatrix X0 = setUnknownValues(buses, deltaVoltageOrders, wi, v1);
 		int N =3;
-//		for(int i = 0;i<5;i++) {
+		for(int i = 1;i<5;i++) {
 			setActiveReactiveGen(buses,wi,w0,v0);
 			ArrayList<ArrayList<DerivativeStructure>> pq2 = createEquations3(buses);
 			ArrayList<Double> PQLossLoad2 = calculatePQLossLoad(cAdmittances,buses);
 			double [] mismatches2 = calculateMismatchMatrix(buses, wi, w0, v0, pq2, PQLossLoad2);
+			RealMatrix fx0 = new Array2DRowRealMatrix(mismatches2);
+		
 			double [][] Jacobian = constructJacabian(deltaVoltageOrders, pq2, N, buses, wi, admittanceS, indexes);
 			RealMatrix JJ = new Array2DRowRealMatrix(Jacobian);
-//		}
+			RealMatrix X1= X0.add(MatrixUtils.inverse(JJ).multiply(fx0));
+			updateUnknowns(X1,buses,deltaVoltageOrders,indexes,params,order);
+			//Update of w and V
+			wi = X1.getEntry(X1.getRowDimension()-2, 0);
+			buses.get(0).voltage = new DerivativeStructure(params, order, 0, X1.getEntry(X1.getRowDimension()-1, 0));
+			
+			for(int j=0;j<X1.getRowDimension();j++) 
+				System.out.printf("\t%s = %7.6f \t iteration %d %n", "Column".concat(""+j) ,X1.getEntry(j, 0), i);
+			
+			System.out.printf("%s%n", "--------------------------------------------");
+		}
 		
 	}
 
@@ -137,8 +143,8 @@ public class ModifiedNR {
 		double qTot = PQLossLoad.get(1)+PQLossLoad.get(3);
 		for (Bus b : Buses) {
 			if (b.type == 2) {
-				pSys += (1 / b.mp) * w0 - w;
-				pSys += (1 / b.mp) * v0 - b.voltage.getValue();
+				pSys += (1 / b.mp) * (w0 - w);
+				qSys += (1 / b.nq) * (v0 - b.voltage.getValue());
 			}
 		}
 		
@@ -163,6 +169,7 @@ public class ModifiedNR {
 		
 		System.out.printf("Ptotal:\t%f \nQtotal:\t %f\n",pTot,qTot);
 		System.out.printf("Psys:\t%f \nQsys:\t %f\n",pSys,qSys);
+		System.out.printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 		return mismatches;
 	}
 
@@ -315,8 +322,8 @@ public class ModifiedNR {
 		jacobian[nofP+nofQ][nofD+nofV+1] = j34;
 
 		double j44 = 0;
-		if (buses.get(1).type == 2)
-			j44 = -1 / buses.get(1).nq;
+		if (buses.get(0).type == 2)
+			j44 = -1 / buses.get(0).nq;
 		else
 			j44 = 0;
 
@@ -360,7 +367,6 @@ public class ModifiedNR {
 		return jacobian;
 
 	}
-
 	
 	public static ArrayList<ArrayList<Integer[]>> createOrders2(ArrayList<Bus> buses) {
 
@@ -387,7 +393,6 @@ public class ModifiedNR {
 
 		return deltaVoltageOrders;
 	}
-
 	
 	public static ArrayList<ArrayList<DerivativeStructure>> createEquations3(ArrayList<Bus> buses) {
 		ArrayList<ArrayList<DerivativeStructure>> pq = new ArrayList<ArrayList<DerivativeStructure>>();
@@ -406,23 +411,18 @@ public class ModifiedNR {
 							.multiply(buses.get(i).voltage).multiply((buses.get(k).delta.negate()
 									.add(buses.get(k).theta.getEntry(k, i)).add(buses.get(i).delta)).sin()));
 					}
-
 				}
-
 			}
-
 			p.add(equationP.subtract(buses.get(k).p));
 			if (buses.get(k).type != 0) {
 				q.add(equationQ.subtract(buses.get(k).q));
 			}
 		}
-		
 		pq.add(p);
 		pq.add(q);
 		return pq;
 	}
-	
-	
+		
 	public static ArrayList<Double> calculatePQLossLoad(Complex[][] cAdmittances,ArrayList<Bus> buses) {
 		ArrayList<Double> PQLossLoad = new ArrayList<>();
 		
@@ -490,7 +490,7 @@ public class ModifiedNR {
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders, ArrayList<ArrayList<Integer>> indexes, int params,
 			int order) {
 		int nofD = deltaVoltageOrders.get(0).size();
-		int nofV = deltaVoltageOrders.get(1).size();
+		//int nofV = deltaVoltageOrders.get(1).size();
 		int j = 0;
 		int f = nofD;
 		for (int i = 0; i < deltaVoltageOrders.size(); i++) {
@@ -501,6 +501,7 @@ public class ModifiedNR {
 					j++;
 				} else if (k % 2 == 1) {
 					buses.get(k / 2).voltage = new DerivativeStructure(params, order, k, X1.getEntry(f, 0));
+					System.out.println(k/2);
 					f++;
 				}
 
@@ -508,6 +509,9 @@ public class ModifiedNR {
 
 		}
 		
+//		for(Bus b: buses) {
+//			b.cVolt = new Complex(b.voltage.getValue(),b.delta.getValue());
+//		}
 		
 	}
 

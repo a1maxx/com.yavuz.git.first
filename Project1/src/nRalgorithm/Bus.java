@@ -16,7 +16,7 @@ public class Bus {
 	public DerivativeStructure voltage;
 	public DerivativeStructure delta;
 	public int index;
-	int order = 2;
+	public int order = 2;
 	double initialValue_d = 0.0;
 	double initialValue_v = 1.0;
 	boolean slack = false;
@@ -51,7 +51,7 @@ public class Bus {
 		this.p = P;
 		this.q = Q;
 		this.mp = 0.5;
-		this.nq = 0.5;
+		this.nq = 5;
 		delta = new DerivativeStructure(params, order, index, initialValue_d);
 		voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
 		this.cVolt = new Complex(magnitude, degree);
@@ -168,7 +168,7 @@ public class Bus {
 		return sb.toString();
 
 	}
-
+// Function that generates P and Q functions
 	static DerivativeStructure[] createEquations2(ArrayList<Bus> buses) {
 		int l = 0;
 		DerivativeStructure equations[] = new DerivativeStructure[buses.size()];
