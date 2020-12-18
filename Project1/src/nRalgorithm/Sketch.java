@@ -39,24 +39,35 @@ public class Sketch {
 //		double[][] a = new double[1][2];
 //		System.out.println(a.length);
 //		System.out.println(a[0].length);
-		double [] d= {1,2};
-		double [] f= {3,4};
-		double [] g  = new double[5];
-		System.arraycopy(d, 0, g, 0, d.length);
-		System.arraycopy(f, 0, g, d.length, f.length);
-		for(double i : g)
-			System.out.println(i);
+//		double [] d= {1,2};
+//		double [] f= {3,4};
+//		double [] g  = new double[5];
+//		System.arraycopy(d, 0, g, 0, d.length);
+//		System.arraycopy(f, 0, g, d.length, f.length);
+//		for(double i : g)
+//			System.out.println(i);
 //		System.out.println(c.conjugate().multiply(c));
 //		System.out.println(c.getReal());
 //		System.out.println(c.getImaginary());
-		Complex c2= new Complex(1,2);
-		System.out.println(Math.atan2(c2.getReal(), c2.getImaginary()));
-		System.out.println(0.751e-3);
-		System.out.println(2e-3*1000);
+		Complex c2= new Complex(5,2);
+		Complex c3 = new Complex(0,0.250000);
+		System.out.println(c3.pow(-1).getReal()>0.0000000001);
+		System.out.println(Math.atan2(c2.getImaginary(),c2.getReal()));
+		System.out.println();
+//		System.out.println(0.751e-3);
+//		System.out.println(2e-3*1000);
 //		System.out.println(c2.multiply(c));
 //		System.out.println(c.subtract(new Complex(0,1)));
 //		
-//		
+//		for (int i = 0; i < 3; i++) {
+//			for (int j = 0; j < 3; j++) {
+//				if(i!=j)
+//				System.out.printf("(%d,%d)\t", i, j);
+//				else System.out.print("     \t");
+//			}
+//			System.out.printf("\n");
+//		}
+		System.out.println(Admittance.polarToComplex(1.01238, -1.47170*Math.PI/180).getReal());
 		
 		
 	}

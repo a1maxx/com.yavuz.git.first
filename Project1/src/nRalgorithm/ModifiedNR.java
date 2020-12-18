@@ -52,8 +52,9 @@ public class ModifiedNR {
 		ArrayList<ArrayList<Admittance>> admittanceS = new ArrayList<>();
 		double [][] xadmittances = new double[admittances.length][admittances[1].length];
 		for (int i = 0, len = xadmittances.length; i < len; i++)
-		    Arrays.fill(xadmittances[i], 0);
-		Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix(admittances, xadmittances);
+		    Arrays.fill(xadmittances[i], 0.002);
+		double w = 1.0;
+		Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix(admittances, xadmittances,w);
 		
 		for (int i = 0; i < 3; i++) {
 			ArrayList<Admittance> temp0 = new ArrayList<>();
@@ -76,8 +77,9 @@ public class ModifiedNR {
 		double v1 = 1;
 		RealMatrix X0 = setUnknownValues(buses, deltaVoltageOrders, wi, v1);
 		int N =3;
-		for(int i = 1;i<5;i++) {
+		for(int i = 1;i<10;i++) {
 			setActiveReactiveGen(buses,wi,w0,v0);
+			cAdmittances = Admittance.constructComplexAdmittanceMatrix(admittances, xadmittances,wi);
 			ArrayList<ArrayList<DerivativeStructure>> pq2 = createEquations3(buses);
 			ArrayList<Double> PQLossLoad2 = calculatePQLossLoad(cAdmittances,buses);
 			double [] mismatches2 = calculateMismatchMatrix(buses, wi, w0, v0, pq2, PQLossLoad2);
@@ -490,7 +492,6 @@ public class ModifiedNR {
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders, ArrayList<ArrayList<Integer>> indexes, int params,
 			int order) {
 		int nofD = deltaVoltageOrders.get(0).size();
-		//int nofV = deltaVoltageOrders.get(1).size();
 		int j = 0;
 		int f = nofD;
 		for (int i = 0; i < deltaVoltageOrders.size(); i++) {
@@ -501,7 +502,6 @@ public class ModifiedNR {
 					j++;
 				} else if (k % 2 == 1) {
 					buses.get(k / 2).voltage = new DerivativeStructure(params, order, k, X1.getEntry(f, 0));
-					System.out.println(k/2);
 					f++;
 				}
 
@@ -509,9 +509,9 @@ public class ModifiedNR {
 
 		}
 		
-//		for(Bus b: buses) {
-//			b.cVolt = new Complex(b.voltage.getValue(),b.delta.getValue());
-//		}
+		//for(Bus b: buses) {
+		//	b.cVolt = new Complex(b.voltage.getValue(),b.delta.getValue());
+		//}
 		
 	}
 

@@ -54,7 +54,7 @@ public class Bus {
 		this.nq = 5;
 		delta = new DerivativeStructure(params, order, index, initialValue_d);
 		voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
-		this.cVolt = new Complex(magnitude, degree);
+		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
 
 	}
 
