@@ -36,13 +36,13 @@ public class Bus {
 		this.q = Q;
 		this.mp = 0.5;
 		this.nq = 0.5;
-		delta = new DerivativeStructure(params, order, index, initialValue_d);
-		voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
+		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
+		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
+		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
 
 	}
 
-	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q, double magnitude,
-			double degree) {
+	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q,double mp,double nq) {
 		this.type = type;
 		int params = 6;
 		this.admittance = new Array2DRowRealMatrix(admittance);
@@ -50,10 +50,10 @@ public class Bus {
 		this.index = index;
 		this.p = P;
 		this.q = Q;
-		this.mp = 0.5;
-		this.nq = 5;
-		delta = new DerivativeStructure(params, order, index, initialValue_d);
-		voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
+		this.mp = mp;
+		this.nq = nq;
+		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
+		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
 		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
 
 	}
@@ -70,8 +70,8 @@ public class Bus {
 		this.q = Q;
 		this.nq = NQ;
 		this.mp = MP;
-		delta = new DerivativeStructure(params, order, index, initialValue_d);
-		voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
+		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
+		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
 		this.cVolt = new Complex(magnitude, degree);
 
 	}
@@ -171,7 +171,14 @@ public class Bus {
 // Function that generates P and Q functions
 	static DerivativeStructure[] createEquations2(ArrayList<Bus> buses) {
 		int l = 0;
-		DerivativeStructure equations[] = new DerivativeStructure[buses.size()];
+		int size=0;
+		for(Bus b: buses) {
+			if(b.type==0) {
+				size = size +2;
+			}else if(b.type==1)
+				size++;
+		}
+		DerivativeStructure equations[] = new DerivativeStructure[size];
 		for (int k = 0; k < buses.size(); k++) {
 			DerivativeStructure equationP = new DerivativeStructure(6, 2);
 			DerivativeStructure equationQ = new DerivativeStructure(6, 2);

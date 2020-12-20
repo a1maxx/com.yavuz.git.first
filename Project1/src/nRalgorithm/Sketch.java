@@ -53,7 +53,7 @@ public class Sketch {
 		Complex c3 = new Complex(0,0.250000);
 		System.out.println(c3.pow(-1).getReal()>0.0000000001);
 		System.out.println(Math.atan2(c2.getImaginary(),c2.getReal()));
-		System.out.println();
+		System.out.println(3.0/2);
 //		System.out.println(0.751e-3);
 //		System.out.println(2e-3*1000);
 //		System.out.println(c2.multiply(c));

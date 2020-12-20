@@ -3,7 +3,10 @@ package nRalgorithm;
 import java.util.ArrayList;
 
 import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.linear.Array2DRowFieldMatrix;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.util.FastMath;
 
 public class Admittance {
 	
@@ -26,7 +29,7 @@ public class Admittance {
 			for (int j = 0; j < radmittances[1].length; j++) {
 				 	if (i!=j) {
 						Complex temp = new Complex(radmittances[i][j], xadmittances[i][j] * w);
-						cAdmittances[i][j] = temp.pow(-1);
+						cAdmittances[i][j] = temp.pow(-1).multiply(-1);
 					}
 			}
 
@@ -37,7 +40,7 @@ public class Admittance {
 					Complex temp0 = new Complex(0, 0);
 					for (int k = 0; k < radmittances.length; k++) {
 						for (int l = 0; l < radmittances[1].length; l++) {
-							if (k!=l) {
+							if (k!=l && k==i) {
 								temp0 = temp0
 										.add((new Complex(radmittances[k][l], xadmittances[k][l] * w)).pow(-1));
 							}
@@ -51,12 +54,12 @@ public class Admittance {
 			
 		}
 
-		for (int i = 0; i < radmittances.length; i++) {
-			for (int j = 0; j < radmittances[1].length && i==j; j++) {
-				System.out.print(cAdmittances[i][j].getReal());
-			}
-			System.out.println();
-		}
+//		for (int i = 0; i < radmittances.length; i++) {
+//			for (int j = 0; j < radmittances[1].length; j++) {
+//				System.out.print(".... \t"+cAdmittances[i][j].getImaginary());
+//			}
+//			System.out.println();
+//		}
 		return cAdmittances;
 	}
 
@@ -71,5 +74,40 @@ public class Admittance {
 		return temp;
 		
 	}
+	
+	public static double getMag(Complex x) {
+		return FastMath.sqrt(Math.pow(x.getReal(),2)+Math.pow(x.getImaginary(),2));
+	}
+	
+	public static double getAng(Complex x) {
+		return FastMath.atan2(x.getImaginary(),x.getReal());
+	}
+
+	public static RealMatrix createMadmittance(Complex[][] cAdmittances) {
+		double [][] mAdmittance = new double[cAdmittances.length][cAdmittances.length];
+		for(int i=0;i<cAdmittances.length;i++) {
+			for(int j=0;j<cAdmittances[0].length;j++) {
+				mAdmittance[i][j]=Admittance.getMag(cAdmittances[i][j]);
+				
+			}
+		}
+		
+		return new Array2DRowRealMatrix(mAdmittance);
+	}
+	
+	public static RealMatrix createTadmittance(Complex[][] cAdmittances) {
+		double [][] tAdmittance = new double[cAdmittances.length][cAdmittances.length];
+		for(int i=0;i<cAdmittances.length;i++) {
+			for(int j=0;j<cAdmittances[0].length;j++) {
+				tAdmittance[i][j]=Admittance.getAng(cAdmittances[i][j]);
+				
+			}
+		}
+		
+		return new Array2DRowRealMatrix(tAdmittance);
+	}
+	
+	
+	
 }
 

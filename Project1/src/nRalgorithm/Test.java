@@ -56,7 +56,7 @@ public class Test {
 		buses.get(2).voltage = new DerivativeStructure(params, order, 5, 1.01);
 		DerivativeStructure[] equations = Bus.createEquations2(buses);
 		
-		for (int i = 1; i <= 5; i++) {
+		for (int i = 1; i <= 10; i++) {
 			equations = Bus.createEquations2(buses);
 			ArrayList<Double> unknowns0 = GenericNR.calculateUnknowns(buses);
 			X0 = new Array2DRowRealMatrix(GenericNR.convertArray(unknowns0));
@@ -67,6 +67,7 @@ public class Test {
 			RealMatrix fx0 = new Array2DRowRealMatrix(functions0);
 			RealMatrix JI = MatrixUtils.inverse(J);
 			X0 = X0.subtract(JI.multiply(fx0));
+			//X0 = X0.subtract(fx0.multiply(JI));
 			GenericNR.updateUnknowns(X0, params, order, orders, buses);
 			System.out.printf("\td2 = %7.6f \t iteration %d %n", X0.getEntry(0, 0), i);
 			System.out.printf("\tv2 = %7.6f \t iteration %d %n", X0.getEntry(1, 0), i);
