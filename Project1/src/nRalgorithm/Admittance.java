@@ -40,7 +40,7 @@ public class Admittance {
 					Complex temp0 = new Complex(0, 0);
 					for (int k = 0; k < radmittances.length; k++) {
 						for (int l = 0; l < radmittances[1].length; l++) {
-							if (k!=l && k==i) {
+							if (k==i) {
 								temp0 = temp0
 										.add((new Complex(radmittances[k][l], xadmittances[k][l] * w)).pow(-1));
 							}

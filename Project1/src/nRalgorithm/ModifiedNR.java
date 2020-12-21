@@ -16,7 +16,7 @@ public class ModifiedNR {
 	public static void main(String[] args) {
 
 		double X11, X12, X13, X21, X22, X23, X31, X32, X33;
-		X11 = 0;
+		X11 = 0.02;
 		X12 = 0.1;
 		X13 = 0.25;
 		X21 = 0.1;
@@ -24,7 +24,7 @@ public class ModifiedNR {
 		X23 = 0.2;
 		X31 = 0.25;
 		X32 = 0.2;
-		X33 = 0;
+		X33 = 0.02;
 
 		double pi = Math.PI;
 		double t11, t12, t13, t21, t22, t23, t31, t32, t33;
@@ -63,7 +63,7 @@ public class ModifiedNR {
 		double wi = 1;
 		RealMatrix X0 = setUnknownValues(buses, deltaVoltageOrders, wi, buses.get(0).voltage.getValue());
 		
-		for (int i = 1; i <10; i++) {
+		for (int i = 1; i < 4; i++) {
 			Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix(radmittances, xadmittances, wi);
 			setActiveReactiveGen(buses, wi, w0, v0);
 			
@@ -78,11 +78,12 @@ public class ModifiedNR {
 
 			RealMatrix fx0 = new Array2DRowRealMatrix(mismatches);
 			System.out.println(fx0);
-			//double[][] Jacobian = constructJacabian(deltaVoltageOrders, pq, buses, wi, cAdmittances, indexes);
+		
 			double[][] Jacobian = constructJacabian2(deltaVoltageOrders, pq, buses, wi, cAdmittances, indexes,
-					Admittance.createMadmittance(cAdmittances),Admittance.createTadmittance(cAdmittances));
+					Admittance.createMadmittance(cAdmittances),Admittance.createTadmittance(cAdmittances),radmittances,xadmittances);
 			
 			RealMatrix JJ = new Array2DRowRealMatrix(Jacobian);
+			
 			for(int f=0;f<JJ.getRowDimension();f++) {
 				for(int k=0;k<JJ.getColumnDimension();k++) {
 					System.out.printf("%.2f\t",JJ.getEntry(f, k));
@@ -144,11 +145,61 @@ public class ModifiedNR {
 			if (b.type == 2) {
 				b.p = 0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) );		
 				b.q = 0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ) ;
-//				System.out.printf("b.p=%f\t b.q=%f\t\n",b.p,b.q);
-//				System.out.println(b.voltage.getValue());
+				System.out.printf("\tb.p=%f\t b.q=%f\t\n",b.p,b.q);
+				System.out.printf("Voltage = %.2f\n",b.voltage.getValue());
+				System.out.printf("Frequency = %.2f \n",wi);
 			}
 		}
 
+	}
+
+	public static ArrayList<Double> calculatePQLossLoad(Complex[][] cAdmittances, ArrayList<Bus> buses, double w) {
+		ArrayList<Double> PQLossLoad = new ArrayList<>();
+
+		
+		double PLoad = 0.0;
+		double QLoad = 0.0;
+		double v0 = 1.01;
+		double w0 = 1.0;
+		double alpha = 1.0;
+		double beta = 1.0;
+		double kpf = 1.0;
+		double kqf = -1.0;
+		for (int k = 0; k < buses.size(); k++) {
+			if (buses.get(k).type == 1) {
+				PLoad += buses.get(k).p * Math.pow(buses.get(k).voltage.getValue() / v0, alpha) * (1 + kpf * (w - w0));
+				QLoad += buses.get(k).q * Math.pow(buses.get(k).voltage.getValue() / v0, beta) * (1 + kqf * (w - w0));
+			}
+		}
+		double PLoss = 0.0;
+		double QLoss = 0.0;
+		for (int k = 0; k < buses.size(); k++) {
+				for (int n = 0; n < buses.size(); n++) {
+					Complex temp0 = buses.get(k).cVolt.conjugate().multiply(buses.get(n).cVolt);
+					Complex temp1 = temp0.add(buses.get(n).cVolt.conjugate().multiply(buses.get(k).cVolt));
+					Complex temp2 = temp1.multiply(cAdmittances[k][n]);
+//
+//					 System.out.println("Volt K "+buses.get(k).cVolt);
+//					 System.out.println("VoltageMultiplication :"+temp1);
+//					 System.out.println("admittance :" +cAdmittances[k][n]);
+//					 System.out.println("AdmittanceMultiplication :"+temp2);
+//					 System.out.println();
+
+					PLoss = PLoss + temp2.getReal();
+					QLoss = QLoss + temp2.getImaginary();		
+			}
+		}
+		
+		PQLossLoad.add(0.5 * PLoss);
+		PQLossLoad.add(-0.5 * QLoss);
+		PQLossLoad.add(PLoad);
+		
+		PQLossLoad.add(QLoad);
+		System.out.println("QLOSS ---->" + QLoss);
+		System.out.println("QLoad ---->" + QLoad);
+		System.out.println("PLOSS ---->" + PLoss);
+		System.out.println("PLoad ---->" + PLoad);
+		return PQLossLoad;
 	}
 
 	public static double[] calculateMismatchMatrix(ArrayList<Bus> Buses, double w, double w0, double v0,
@@ -161,8 +212,8 @@ public class ModifiedNR {
 
 		for (Bus b : Buses) {
 			if (b.type == 2 && b.index!=0) {
-				pSys += 0.5*b.p;
-				qSys += 0.5*b.q;
+				pSys += b.p;
+				qSys += b.q;
 			}
 		}
 
@@ -180,10 +231,9 @@ public class ModifiedNR {
 		double[] mismatches = new double[nofP + nofQ + 2];
 		System.arraycopy(pMismatch, 0, mismatches, 0, pMismatch.length);
 		System.arraycopy(qMismatch, 0, mismatches, pMismatch.length, qMismatch.length);
-		mismatches[(pMismatch.length + qMismatch.length)] = pTot + pSys;
-		mismatches[(pMismatch.length + qMismatch.length) + 1] = qTot + qSys;
-		// System.out.println(qTot);
-		// System.out.println(qSys);
+		mismatches[(pMismatch.length + qMismatch.length)] = pTot - pSys;
+		mismatches[(pMismatch.length + qMismatch.length) + 1] = qTot- qSys;
+
 		System.out.printf("Ptotal:\t%f \nQtotal:\t %f\n", pTot, qTot);
 		System.out.printf("Psys:\t%f \nQsys:\t %f\n", pSys, qSys);
 		System.out.printf("Ptot-Psys:\t%f\n", pTot - pSys);
@@ -195,211 +245,11 @@ public class ModifiedNR {
 //		System.out.println();
 		return mismatches;
 	}
-	public static double[][] constructJacabian(ArrayList<ArrayList<Integer[]>> deltaVoltageOrders,
-			ArrayList<ArrayList<DerivativeStructure>> pq, ArrayList<Bus> buses, double w,
-			Complex[][] cAdmittances, ArrayList<ArrayList<Integer>> indexes) {
-
-		int nofP = pq.get(0).size();
-		int nofQ = pq.get(1).size();
-		int nofD = deltaVoltageOrders.get(0).size();
-		int nofV = deltaVoltageOrders.get(1).size();
-		
-		double[][] jacobian = new double[nofP + nofQ + 2][nofD + nofV + 2];
-
-		for (int i = 0; i < nofP; i++) {
-			for (int j = 0; j < nofD; j++) {
-				jacobian[i][j] = pq.get(0).get(i)
-						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(0).get(j)));
-			}
-		}
-
-		for (int i = 0; i < nofP; i++) {
-			for (int j = nofD; j < nofD + nofV; j++) {
-				jacobian[i][j] = pq.get(0).get(i)
-						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(1).get((j - nofD))));
-			}
-		}
-
-		for (int i = nofP; i < nofP + nofQ; i++) {
-			for (int j = 0; j < nofD; j++) {
-				jacobian[i][j] = pq.get(1).get(i - nofP)
-						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(0).get(j)));
-			}
-		}
-		for (int i = nofP; i < nofP + nofQ; i++) {
-			for (int j = nofD; j < nofD + nofV; j++) {
-				jacobian[i][j] = pq.get(1).get(i - nofP)
-						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(1).get(j - nofD)));
-			}
-		}
-
-		double j13[] = new double[nofP];
-		int j = 0;
-		ArrayList<Integer> pS = new ArrayList<Integer>();
-		pS.addAll(indexes.get(0));
-		pS.addAll(indexes.get(1));
-		pS.addAll(indexes.get(2));
-
-		for (int k : pS) {
-			double temp0 = 0;
-			for (int n = 0; n < buses.size(); n++) {
-				double temp1 = 0;
-				double admittanceX = cAdmittances[k][n].getImaginary();
-				double admittanceR = cAdmittances[k][n].getReal();
-				temp1 = (FastMath.pow(admittanceX, 2) / w)
-						/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3.0 / 2));
-				double temp2 = 0;
-				temp2 = -((admittanceX / (admittanceR * w)) / (1 + FastMath.pow(admittanceX / admittanceR, 2)));
-				temp0 = temp0
-						+ temp1 * buses.get(n).voltage.getValue()
-								* FastMath.cos(buses.get(k).delta.getValue() - buses.get(k).delta.getValue()
-										- buses.get(k).theta.getEntry(k, n))
-						+ temp2 * FastMath.sqrt(Math.pow(admittanceX, 2) + Math.pow(admittanceR, 2))
-								* buses.get(n).voltage.getValue() * FastMath.sin(buses.get(k).delta.getValue()
-										- buses.get(k).delta.getValue() - buses.get(k).theta.getEntry(k, n));
-
-			}
-
-			j13[j++] = temp0;
-
-		}
-		for (int i = 0; i < nofP; i++) {
-			jacobian[i][nofD + nofV] = j13[i];
-		}
-
-		double j23[] = new double[nofQ];
-		ArrayList<Integer> qS = new ArrayList<Integer>();
-		qS.addAll(indexes.get(1));
-		qS.addAll(indexes.get(2));
-		j = 0;
-		for (int k : qS) {
-			double temp0 = 0;
-			for (int n = 0; n < buses.size(); n++) {
-				double temp1 = 0;
-				double admittanceX = cAdmittances[k][n].getImaginary();
-				double admittanceR = cAdmittances[k][n].getReal();
-				temp1 = (FastMath.pow(admittanceX, 2) / w)
-						/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3 / 2));
-				double temp2 = 0;
-				temp2 = -((admittanceX / (admittanceR * w)) / (1 + FastMath.pow(admittanceX / admittanceR, 2)));
-				temp0 = temp0
-						+ temp1 * buses.get(n).voltage.getValue()
-								* FastMath.sin(buses.get(k).delta.getValue() - buses.get(k).delta.getValue()
-										- buses.get(k).theta.getEntry(k, n))
-						- temp2 * FastMath.sqrt(Math.pow(admittanceX, 2) + Math.pow(admittanceR, 2))
-								* buses.get(n).voltage.getValue() * FastMath.cos(buses.get(k).delta.getValue()
-										- buses.get(k).delta.getValue() - buses.get(k).theta.getEntry(k, n));
-
-			}
-
-			j23[j++] = temp0 * buses.get(k).voltage.getValue();
-
-		}
-
-		for (int i = nofP; i < nofP + nofQ; i++) {
-			jacobian[i][nofD + nofV] = j23[i - nofP];
-		}
-		double j33 = 0;
-		for (Bus b : buses) {
-			if (b.type == 2)
-				j33 += -1 / b.mp;
-		}
-		jacobian[nofP + nofQ][nofD + nofV] = j33;
-
-		double j43 = 0;
-		jacobian[nofP + nofQ + 1][nofP + nofQ] = j43;
-
-		double j14[] = new double[buses.size() - 1];
-		j = 0;
-		for (int k = 1; k < buses.size()-1; k++) {
-			double magnitude = Admittance.getMag(cAdmittances[k][0]);
-			j14[j++] = buses.get(k).voltage.getValue() * magnitude * FastMath.cos(
-					buses.get(k).delta.getValue() - buses.get(0).delta.getValue() - buses.get(k).theta.getEntry(k, 0));
-		}
-		for (int i = 0; i < nofP; i++) {
-			jacobian[i][nofD + nofV + 1] = j14[i];
-		}
-
-		double j24[] = new double[nofQ];
-		j = 0;
-
-		for (int k = 1; k < nofQ; k++) {
-			double magnitude = Admittance.getMag(cAdmittances[k][0]);
-
-			j24[j] = buses.get(k).voltage.getValue() * magnitude * FastMath.sin(
-					buses.get(k).delta.getValue() - buses.get(0).delta.getValue() - buses.get(k).theta.getEntry(k, 0));
-			j++;
-		}
-		for (int i = nofP; i < nofP + nofQ; i++) {
-			jacobian[i][nofD + nofV + 1] = j24[i - nofP];
-		}
-
-		double j34 = 0;
-		if(buses.get(0).type==2)
-			jacobian[nofP + nofQ][nofD + nofV + 1] = j34;
-		else
-			jacobian[nofP + nofQ][nofD + nofV + 1] = -1 / (2*buses.get(0).nq);;
-		
-
-		double j44 = 0;
-		if (buses.get(0).type == 2)
-			j44 = -1 / (2*buses.get(0).nq);
-		else
-			j44 = 0;
-
-		jacobian[nofP + nofQ + 1][nofD + nofV + 1] = j44;
-
-		double j31 = 0;
-
-		for (int i = 0; i < buses.size() - 1; i++) {
-			jacobian[nofP + nofQ][i] = j31;
-
-		}
-
-		double j41 = 0;
-
-		for (int i = 0; i < buses.size() - 1; i++) {
-			jacobian[nofP + nofQ + 1][i] = j41;
-
-		}
-		double j32[] = new double[nofV];
-		j = 0;
-		for (int k : qS) {
-			if (buses.get(k).type == 2) {
-				j32[j++] = -1 / (2*buses.get(k).nq);
-			} else {
-				j32[j++] = 0;
-			}
-
-		}
-		for (int i = nofD; i < nofD + nofV; i++) {
-			jacobian[nofP + nofQ][i] = j32[i-nofD];
-
-		}
-		
-		
-		double j42[] = new double[nofV];
-		j = 0;
-		for (int k : qS) {
-			if (buses.get(k).type == 2) {
-				j42[j++] = -1 / (2*buses.get(k).nq);
-			} else {
-				j42[j++] = 0;
-			}
-
-		}
-
-		for (int i = nofD; i < nofD + nofV; i++) {
-			jacobian[nofP + nofQ + 1][i] = j42[i - nofD];
-
-		}
-
-		return jacobian;
-
-	}
+	
 	public static double[][] constructJacabian2(ArrayList<ArrayList<Integer[]>> deltaVoltageOrders,
 			ArrayList<ArrayList<DerivativeStructure>> pq, ArrayList<Bus> buses, double w,
-			Complex[][] cAdmittances, ArrayList<ArrayList<Integer>> indexes,RealMatrix admittance,RealMatrix theta) {
+			Complex[][] cAdmittances, ArrayList<ArrayList<Integer>> indexes,RealMatrix admittance,RealMatrix theta,
+			double [][]radmittances,double[][] xadmittances) {
 
 		int nofP = pq.get(0).size();
 		int nofQ = pq.get(1).size();
@@ -446,25 +296,27 @@ public class ModifiedNR {
 			double temp0 = 0;
 			for (int n = 0; n < buses.size(); n++) {
 				double temp1 = 0;
-				double admittanceX = cAdmittances[k][n].getImaginary();
-				double admittanceR = cAdmittances[k][n].getReal();
-				temp1 = (FastMath.pow(admittanceX, 2) / w)
+				double admittanceX = -cAdmittances[k][n].pow(-1).getImaginary();
+				double admittanceR = -cAdmittances[k][n].pow(-1).getReal();;
+				temp1 = -(FastMath.pow(admittanceX, 2) / w)
 						/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3.0 / 2));
 				double temp2 = 0;
 				temp2 = -((admittanceX / (admittanceR * w)) / (1 + FastMath.pow(admittanceX / admittanceR, 2)));
 				temp0 = temp0
 						+ temp1 * buses.get(n).voltage.getValue()
-								* FastMath.cos(buses.get(k).delta.getValue() - buses.get(k).delta.getValue()
+								* FastMath.cos(buses.get(k).delta.getValue() - buses.get(n).delta.getValue()
 										- theta.getEntry(k, n))
 						+ temp2 * admittance.getEntry(k, n)
 								* buses.get(n).voltage.getValue() * FastMath.sin(buses.get(k).delta.getValue()
-										- buses.get(k).delta.getValue() - theta.getEntry(k, n));
+										- buses.get(n).delta.getValue() - theta.getEntry(k, n));
 
 			}
 
-			j13[j++] = temp0*buses.get(k).voltage.getValue();
+			j13[j] = temp0*buses.get(k).voltage.getValue();
+			j++;
 
 		}
+		
 		for (int i = 0; i < nofP; i++) {
 			jacobian[i][nofD + nofV] = j13[i];
 		}
@@ -480,19 +332,19 @@ public class ModifiedNR {
 			double temp0 = 0;
 			for (int n = 0; n < buses.size(); n++) {
 				double temp1 = 0;
-				double admittanceX = cAdmittances[k][n].getImaginary();
-				double admittanceR = cAdmittances[k][n].getReal();
-				temp1 = (FastMath.pow(admittanceX, 2) / w)
-						/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3 / 2));
+				double admittanceX = -cAdmittances[k][n].pow(-1).getImaginary();
+				double admittanceR = -cAdmittances[k][n].pow(-1).getReal();
+				temp1 = -(FastMath.pow(admittanceX, 2) / w)
+						/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3.0 / 2));
 				double temp2 = 0;
 				temp2 = -((admittanceX / (admittanceR * w)) / (1 + FastMath.pow(admittanceX / admittanceR, 2)));
 				temp0 = temp0
 						+ temp1 * buses.get(n).voltage.getValue()
-								* FastMath.sin(buses.get(k).delta.getValue() - buses.get(k).delta.getValue()
+								* FastMath.sin(buses.get(k).delta.getValue() - buses.get(n).delta.getValue()
 										- theta.getEntry(k, n))
 						- temp2 * admittance.getEntry(k, n)
 								* buses.get(n).voltage.getValue() * FastMath.cos(buses.get(k).delta.getValue()
-										- buses.get(k).delta.getValue() - theta.getEntry(k, n));
+										- buses.get(n).delta.getValue() - theta.getEntry(k, n));
 
 			}
 
@@ -708,51 +560,7 @@ public class ModifiedNR {
 		return pq;
 	}
 
-	public static ArrayList<Double> calculatePQLossLoad(Complex[][] cAdmittances, ArrayList<Bus> buses, double w) {
-		ArrayList<Double> PQLossLoad = new ArrayList<>();
-
-		double PLoss = 0.0;
-		double QLoss = 0.0;
-		double PLoad = 0.0;
-		double QLoad = 0.0;
-		double v0 = 1.1;
-		double w0 = 1.0;
-		double alpha = 1.0;
-		double beta = 1.0;
-		double kpf = 1.0;
-		double kqf = -1.0;
-		for (int k = 0; k < buses.size(); k++) {
-			if (buses.get(k).type == 1) {
-				PLoad += buses.get(k).p * Math.pow(buses.get(k).voltage.getValue() / v0, alpha) * (1 + kpf * (w0 - w));
-				QLoad += buses.get(k).q * Math.pow(buses.get(k).voltage.getValue() / v0, beta) * (1 + kqf * (w0 - w));
-			}
-				for (int n = 0; n < buses.size(); n++) {
-
-					Complex temp0 = buses.get(k).cVolt.conjugate().multiply(buses.get(n).cVolt);
-					Complex temp1 = temp0.add(buses.get(n).cVolt.conjugate().multiply(buses.get(k).cVolt));
-					Complex temp2 = temp1.multiply(cAdmittances[k][n]);
-
-//					 System.out.println("Volt K "+buses.get(k).cVolt);
-//					 System.out.println("VoltageMultiplication :"+temp1);
-//					 System.out.println("admittance :" +cAdmittances[k][n]);
-//					 System.out.println("AdmittanceMultiplication :"+temp2);
-//					 System.out.println();
-
-					PLoss = PLoss + temp2.getReal();
-					QLoss = QLoss + temp2.getImaginary();
-
-				
-			}
-		}
-		
-		PQLossLoad.add(0.5 * PLoss);
-		System.out.println("QLOSS ---->" + QLoss);
-		PQLossLoad.add(-0.5 * QLoss);
-		PQLossLoad.add(PLoad);
-		System.out.println("QLoad ---->" + QLoad);
-		PQLossLoad.add(QLoad);
-		return PQLossLoad;
-	}
+	
 	public static RealMatrix setUnknownValues(ArrayList<Bus> buses,ArrayList<ArrayList<Integer[]>> deltaVoltageOrders,double w,double v1){
 		int nofD = deltaVoltageOrders.get(0).size();
 		int nofV = deltaVoltageOrders.get(1).size();

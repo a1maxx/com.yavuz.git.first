@@ -27,7 +27,7 @@ public class Bus {
 	// Constructor of the bus objects
 	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q) {
 		this.type = type;
-		// int params = admittance.length;
+		
 		int params = 6;
 		this.admittance = new Array2DRowRealMatrix(admittance);
 		this.theta = new Array2DRowRealMatrix(theta);
@@ -61,7 +61,6 @@ public class Bus {
 	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q, double NQ, double MP,
 			double magnitude, double degree) {
 		this.type = type;
-		// int params = admittance.length;
 		int params = 6;
 		this.admittance = new Array2DRowRealMatrix(admittance);
 		this.theta = new Array2DRowRealMatrix(theta);
@@ -76,7 +75,7 @@ public class Bus {
 
 	}
 
-	// Dummy Constructors
+	// Dummy Constructor
 	public Bus() {
 
 	}
@@ -156,7 +155,6 @@ public class Bus {
 		}
 		return unknowns;
 	}
-
 	// toString method for class Bus
 	public String toString() {
 
@@ -168,7 +166,7 @@ public class Bus {
 		return sb.toString();
 
 	}
-// Function that generates P and Q functions
+	// Function that generates P and Q functions
 	static DerivativeStructure[] createEquations2(ArrayList<Bus> buses) {
 		int l = 0;
 		int size=0;
