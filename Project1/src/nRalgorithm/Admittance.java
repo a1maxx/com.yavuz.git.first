@@ -23,7 +23,7 @@ public class Admittance {
 
 	public static Complex[][] constructComplexAdmittanceMatrix(double[][] radmittances, double[][] xadmittances,
 			double w) {
-
+		
 		Complex[][] cAdmittances = new Complex[radmittances.length][radmittances[1].length];
 		for (int i = 0; i < radmittances.length; i++) {
 			for (int j = 0; j < radmittances[1].length; j++) {
@@ -40,7 +40,7 @@ public class Admittance {
 					Complex temp0 = new Complex(0, 0);
 					for (int k = 0; k < radmittances.length; k++) {
 						for (int l = 0; l < radmittances[1].length; l++) {
-							if (k==i) {
+							if (k!=l && k==i) {
 								temp0 = temp0
 										.add((new Complex(radmittances[k][l], xadmittances[k][l] * w)).pow(-1));
 							}
@@ -56,7 +56,7 @@ public class Admittance {
 
 //		for (int i = 0; i < radmittances.length; i++) {
 //			for (int j = 0; j < radmittances[1].length; j++) {
-//				System.out.print(".... \t"+cAdmittances[i][j].getImaginary());
+//				System.out.printf(" %.2f\t + j%.2f\t",cAdmittances[i][j].getReal(),cAdmittances[i][j].getImaginary());
 //			}
 //			System.out.println();
 //		}

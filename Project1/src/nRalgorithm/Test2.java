@@ -129,11 +129,11 @@ public class Test2 {
 	double X11, X12, X13, X21, X22, X23, X31, X32, X33;
 	X11 = 0;
 	X12 = 0.1;
-	X13 = 0.25;
+	X13 = 1.25;
 	X21 = 0.1;
 	X22 = 0;
 	X23 = 0.2;
-	X31 = 0.25;
+	X31 = 1.25;
 	X32 = 0.2;
 	X33 = 0;
 	double wi=1.0;
@@ -141,19 +141,22 @@ public class Test2 {
 			double[][] xadmittances = { { X11, X12, X13}, { X21, X22, X23 }, { X31, X32, X33 } };
 			double [][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 			for (int i = 0, len = radmittances.length; i < len; i++)
-			    Arrays.fill(radmittances[i], 0.004);
-			Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix(radmittances, xadmittances,1.0);
+			    Arrays.fill(radmittances[i], 0);
+			Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix(radmittances, xadmittances,0.9999272727272728);
 			
-			for (int i = 0; i < radmittances.length; i++) {
-				for (int j = 0; j < radmittances[1].length; j++) {
-					System.out.printf(".... \t %2.2f",-cAdmittances[i][j].pow(-1).getImaginary());
-				}
-				System.out.println();
-			}
-			System.out.println(Admittance.createMadmittance(cAdmittances));
-			System.out.println(Admittance.createTadmittance(cAdmittances));
 			
-			System.out.println(new Complex(0.004,0.2).pow(-1).getReal());
+			
+			
+//			for (int i = 0; i < radmittances.length; i++) {
+//				for (int j = 0; j < radmittances[1].length; j++) {
+//					System.out.printf(".... \t %2.2f",-cAdmittances[i][j].pow(-1).getImaginary());
+//				}
+//				System.out.println();
+//			}
+//			System.out.println(Admittance.createMadmittance(cAdmittances));
+//			System.out.println(Admittance.createTadmittance(cAdmittances));
+//			
+//			System.out.println(new Complex(0.004,0.2).pow(-1).getReal());
 //			ArrayList<ArrayList<DerivativeStructure>> pq2 = ModifiedNR.createEquations4(buses,Admittance.createMadmittance(cAdmittances),
 //					Admittance.createTadmittance(cAdmittances));
 //			

@@ -32,7 +32,7 @@ public class Sketch {
 //		System.arraycopy(k, 0, g[1], 0, k.length);
 //		RealMatrix c = new Array2DRowRealMatrix(g);
 //		System.out.println(c);
-		
+
 		
 //		System.out.println(Arrays.asList(a).indexOf(3));
 //		GenericNR.update(unknowns);
@@ -49,11 +49,11 @@ public class Sketch {
 //		System.out.println(c.conjugate().multiply(c));
 //		System.out.println(c.getReal());
 //		System.out.println(c.getImaginary());
-		Complex c2= new Complex(5,2);
-		Complex c3 = new Complex(0,0.250000);
-		System.out.println(c3.pow(-1).getReal()>0.0000000001);
-		System.out.println(Math.atan2(c2.getImaginary(),c2.getReal()));
-		System.out.println(3.0/2);
+//		Complex c2= new Complex(5,2);
+//		Complex c3 = new Complex(0,0.250000);
+//		System.out.println(c3.pow(-1).getReal()>0.0000000001);
+//		System.out.println(Math.atan2(c2.getImaginary(),c2.getReal()));
+//		System.out.println(3.0/2);
 //		System.out.println(0.751e-3);
 //		System.out.println(2e-3*1000);
 //		System.out.println(c2.multiply(c));

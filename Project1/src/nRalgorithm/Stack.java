@@ -210,4 +210,50 @@ public class Stack {
 		return jacobian;
 
 	}
+	public static double[] calculateMismatchMatrix(ArrayList<Bus> Buses, double w, double w0, double v0,
+			ArrayList<ArrayList<DerivativeStructure>> pq, ArrayList<Double> PQLossLoad) {
+
+		double pSys = 0;
+		double qSys = 0;
+		double pTot = PQLossLoad.get(0) + PQLossLoad.get(2);
+		double qTot = PQLossLoad.get(1) + PQLossLoad.get(3);
+
+		for (Bus b : Buses) {
+			if (b.type == 2 && b.index!=0) {
+				pSys += b.p;
+				qSys += b.q;
+			}
+		}
+
+		int nofP = pq.get(0).size();
+		int nofQ = pq.get(1).size();
+
+		double[] pMismatch = new double[nofP];
+		double[] qMismatch = new double[nofQ];
+		for (int i = 0; i < pq.get(0).size(); i++)
+			pMismatch[i] = pq.get(0).get(i).getValue();
+
+		for (int i = 0; i < pq.get(1).size(); i++)
+			qMismatch[i] = pq.get(1).get(i).getValue();
+
+		double[] mismatches = new double[nofP + nofQ + 2];
+		System.arraycopy(pMismatch, 0, mismatches, 0, pMismatch.length);
+		System.arraycopy(qMismatch, 0, mismatches, pMismatch.length, qMismatch.length);
+		mismatches[(pMismatch.length + qMismatch.length)] = pTot - pSys;
+		mismatches[(pMismatch.length + qMismatch.length) + 1] = qTot- qSys;
+
+//		System.out.printf("Ptotal:\t%f \nQtotal:\t %f\n", pTot, qTot);
+//		System.out.printf("Psys:\t%f \nQsys:\t %f\n", pSys, qSys);
+//		System.out.printf("Ptot-Psys:\t%f\n", pTot - pSys);
+//		System.out.printf("Qtot-Qsys:\t%f\n", qTot - qSys);
+//		System.out.printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+		// for(int i=0; i<mismatches.length;i++) {
+		// System.out.print(mismatches[i]+"\t");
+		// }
+//		System.out.println();
+		return mismatches;
+	}
+	
+	
+	
 }
