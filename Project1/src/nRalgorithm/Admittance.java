@@ -1,9 +1,8 @@
 package nRalgorithm;
 
-import java.util.ArrayList;
+
 
 import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.linear.Array2DRowFieldMatrix;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;

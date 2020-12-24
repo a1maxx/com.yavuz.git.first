@@ -28,7 +28,9 @@ public class Bus {
 	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q) {
 		this.type = type;
 		
+		//This needs to be generic
 		int params = 6;
+		
 		this.admittance = new Array2DRowRealMatrix(admittance);
 		this.theta = new Array2DRowRealMatrix(theta);
 		this.index = index;
@@ -58,22 +60,6 @@ public class Bus {
 
 	}
 
-	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q, double NQ, double MP,
-			double magnitude, double degree) {
-		this.type = type;
-		int params = 6;
-		this.admittance = new Array2DRowRealMatrix(admittance);
-		this.theta = new Array2DRowRealMatrix(theta);
-		this.index = index;
-		this.p = P;
-		this.q = Q;
-		this.nq = NQ;
-		this.mp = MP;
-		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
-		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
-		this.cVolt = new Complex(magnitude, degree);
-
-	}
 
 	// Dummy Constructor
 	public Bus() {
@@ -225,4 +211,40 @@ public class Bus {
 		return equations;
 	}
 
+	Bus(int type,int index,int params, double P, double Q,double mp,double nq) {
+		this.type = type;
+		this.index = index;
+		this.p = P;
+		this.q = Q;
+		this.mp = mp;
+		this.nq = nq;
+		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
+		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
+		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
+
+	}
+	
+	Bus(int type,int index,int params, double P, double Q,double V) {
+		this.type = type;
+		this.index = index;
+		this.p = P;
+		this.q = Q;
+		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
+		this.voltage = new DerivativeStructure(params, order, index + 1, V);
+		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
+
+	}
+	
+	Bus(int type,int index,int params, double P, double Q) {
+		this.type = type;
+		this.index = index;
+		this.p = P;
+		this.q = Q;
+		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
+		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
+		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
+
+	}
+
+	
 }

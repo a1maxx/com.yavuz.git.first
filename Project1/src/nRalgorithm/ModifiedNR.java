@@ -26,6 +26,7 @@ public class ModifiedNR {
 		X32 = 0.2;
 		X33 = 0;
 
+
 		double pi = Math.PI;
 		double t11, t12, t13, t21, t22, t23, t31, t32, t33;
 		t11 = -pi / 2;
@@ -38,10 +39,6 @@ public class ModifiedNR {
 		t32 = pi / 2;
 		t33 = -pi / 2;
 
-		// Known variables
-
-		int params = 6;
-		int order = 2;
 
 		double[][] xadmittances = { { X11, X12, X13 }, { X21, X22, X23 }, { X31, X32, X33 } };
 		double[][] theta = { { t11, t12, t13 }, { t21, t22, t23 }, { t31, t32, t33 } };
@@ -53,15 +50,18 @@ public class ModifiedNR {
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 
 		buses.add(new Bus(0, xadmittances, theta, 0, 0, 0, 0, 0));
-		buses.add(new Bus(2, xadmittances, theta, 2, 0, 0, -0.0692791530265256, 0.40898603960680735));
+		buses.add(new Bus(2, xadmittances, theta, 2, 0, 0, 0.0692791530265256, 0.40898603960680735));
 		buses.add(new Bus(1, xadmittances, theta, 4, -0.9, -0.8));
+		//buses.add(new Bus(1, xadmittances, theta, 6, -0.9, -0.8));
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = identifyNet(buses);
-
+		
+		int params = buses.size()*2;
+		int order = 2;
 	
 		double wi = 1;
 		
-		for (int i = 1; i < 10; i++) {
+		for (int i = 1; i < 15; i++) {
 			double w0 = 1.0;
 			double v0 = 1.1;
 			
@@ -71,11 +71,12 @@ public class ModifiedNR {
 			
 			RealMatrix X0  = setUnknownValues(buses, deltaVoltageOrders, wi,buses.get(0).voltage.getValue());
 			
+			ArrayList<Double> PQLossLoad = calculatePQLossLoad(cAdmittances, buses, wi);
+			
 			ArrayList<ArrayList<DerivativeStructure>> pq = createEquations4(buses,
 					Admittance.createMadmittance(cAdmittances), Admittance.createTadmittance(cAdmittances));
 			
-			ArrayList<Double> PQLossLoad = calculatePQLossLoad(cAdmittances, buses, wi);
-			
+
 			double[] mismatches = calculateMismatchMatrix2(buses, wi, w0, v0, pq, PQLossLoad,indexes);
 
 			RealMatrix fx0 = new Array2DRowRealMatrix(mismatches);
