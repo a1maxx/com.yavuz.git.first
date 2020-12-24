@@ -34,7 +34,8 @@ public class Admittance {
 			}
 
 		}
-		for (int i = 0; i < radmittances.length; i++) {
+		for (int i = 0; i < radmittances.length; i++)  {
+			  
 			for (int j = 0; j < radmittances[1].length; j++) {
 				if (i==j) {
 					Complex temp0 = new Complex(0, 0);

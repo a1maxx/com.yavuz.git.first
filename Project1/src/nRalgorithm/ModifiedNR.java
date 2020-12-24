@@ -53,7 +53,7 @@ public class ModifiedNR {
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 
 		buses.add(new Bus(0, xadmittances, theta, 0, 0, 0, 0, 0));
-		buses.add(new Bus(2, xadmittances, theta, 2, 0, 0, 0.04, 0.02));
+		buses.add(new Bus(2, xadmittances, theta, 2, 0, 0, -0.0692791530265256, 0.40898603960680735));
 		buses.add(new Bus(1, xadmittances, theta, 4, -0.9, -0.8));
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = identifyNet(buses);
@@ -61,10 +61,10 @@ public class ModifiedNR {
 	
 		double wi = 1;
 		
-		for (int i = 1; i < 500; i++) {
+		for (int i = 1; i < 10; i++) {
 			double w0 = 1.0;
 			double v0 = 1.1;
-			System.out.println(wi);
+			
 			Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix(radmittances, xadmittances, wi);
 			
 			setActiveReactiveGen(buses, wi, w0, v0);
@@ -85,14 +85,15 @@ public class ModifiedNR {
 			
 			RealMatrix JJ = new Array2DRowRealMatrix(Jacobian);
 			
-			for(int f=0;f<JJ.getRowDimension();f++) {
-				for(int k=0;k<JJ.getColumnDimension();k++) {
-					System.out.printf("%.2f\t",JJ.getEntry(f, k));
-				}
-				System.out.println();
-			}		
+//			for(int f=0;f<JJ.getRowDimension();f++) {
+//				for(int k=0;k<JJ.getColumnDimension();k++) {
+//					System.out.printf("%.2f\t",JJ.getEntry(f, k));
+//				}
+//				System.out.println();
+//			}	
+			
 			RealMatrix X1 = X0.subtract(MatrixUtils.inverse(JJ).multiply(fx0));
-			System.out.println(X1);
+//			System.out.println(X1);
 			
 
 			wi = X1.getEntry(X1.getRowDimension() - 2, 0);
@@ -102,14 +103,14 @@ public class ModifiedNR {
 			updateUnknowns(X1, buses, deltaVoltageOrders, indexes, params, order);
 		
 			
-//			System.out.println("x0=\t"+X0);
-//			System.out.println("fx0=\t"+fx0);
+			System.out.println("x1=\t"+X1);
+			System.out.println("fx0=\t"+fx0);
 			
-//			for (int j = 0; j < X1.getRowDimension(); j++)
-//				System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j), X1.getEntry(j, 0), i);
-//
-//			System.out.printf("%s%n", "--------------------------------------------");
-//			
+			for (int j = 0; j < X1.getRowDimension(); j++)
+				System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j), X1.getEntry(j, 0), i);
+
+			System.out.printf("%s%n", "--------------------------------------------");
+			
 
 		}
 
@@ -258,11 +259,11 @@ public class ModifiedNR {
 		mismatches[nofP+nofQ] = pTot + pSys;
 		mismatches[nofP+nofQ + 1] = qTot + qSys;
 
-		System.out.printf("Ptotal:\t%f \nQtotal:\t %f\n", pTot, qTot);
-		System.out.printf("Psys:\t%f \nQsys:\t %f\n", pSys, qSys);
-		System.out.printf("Ptot-Psys:\t%f\n", mismatches[nofP+nofQ]);
-		System.out.printf("Qtot-Qsys:\t%f\n", mismatches[nofP+nofQ + 1]);
-		System.out.printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+//		System.out.printf("Ptotal:\t%f \nQtotal:\t %f\n", pTot, qTot);
+//		System.out.printf("Psys:\t%f \nQsys:\t %f\n", pSys, qSys);
+//		System.out.printf("Ptot-Psys:\t%f\n", mismatches[nofP+nofQ]);
+//		System.out.printf("Qtot-Qsys:\t%f\n", mismatches[nofP+nofQ + 1]);
+//		System.out.printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 //		for (int i = 0; i < mismatches.length; i++) {
 //			System.out.print(mismatches[i] + "\t");
 //		}
