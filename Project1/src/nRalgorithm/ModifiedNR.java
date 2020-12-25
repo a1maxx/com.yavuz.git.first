@@ -168,7 +168,7 @@ public class ModifiedNR {
 		double alpha = 1.0;
 		double beta = 1.0;
 		double kpf = 1.0;
-		double kqf = -1.0;
+		double kqf = -1.5;
 		
 		for (int k = 0; k < buses.size(); k++) {
 			if (buses.get(k).type == 1) {
