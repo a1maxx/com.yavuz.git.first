@@ -31,7 +31,7 @@ public class ModifiedNR2 {
 		}
 
 		for (int i = 0, len = radmittances.length; i < len; i++)
-			Arrays.fill(radmittances[i], 0.2);
+			Arrays.fill(radmittances[i], (random.nextDouble()+1)*0.2);
 
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 		// PV BUS
@@ -42,7 +42,7 @@ public class ModifiedNR2 {
 		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 0.0692791530265256, 0.40898603960680735));
 		// PQ Bus
 		buses.add(new Bus(1, 8, theta.length * 2, -0.8, -0.1));
-		buses.add(new Bus(1, 10, theta.length * 2, -0.1, -0.1));
+		buses.add(new Bus(1, 10, theta.length * 2, -0.5, -0.2));
 
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -93,21 +93,22 @@ public class ModifiedNR2 {
 			for (int j = 0; j < X1.getRowDimension(); j++)
 				System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j), X1.getEntry(j, 0), i);
 
-			System.out.printf("%s%n", "--------------------------------------------");
+			System.out.printf("%s%n", "------------------------------------------------");
 
 		}
 		System.out.println("Total Time Elapsed (in msec) : " + (System.currentTimeMillis() - cur));
 		for (Bus b : buses) {
 			System.out.printf(
 					"\nBus index: %d \t Bus type: %s\n" + "Bus Voltage= %.4f\n" + "Bus Active Power: %.4f\n"
-							+ "Bus Reactive Power: %.4f\n",
+							+ "Bus Reactive Power: %.4f\n"
+							+ "-------------------------------------------------",
 					buses.indexOf(b), b.type == 0 ? "PV" : b.type == 1 ? "PQ" : "DROOP", b.voltage.getValue(), b.p,
 					b.q);
 
 		}
 
-		System.out.printf("\n\nPLoss: %.5f \t PLoad: %.f \n"
-				+ "QLoss: %.5f \t QLoad: %.5f \n", -PQLossLoad.get(0),
+		System.out.printf("\n\nPLoss: %.5f\tPLoad: %.5f\n"
+				+ "QLoss: %.5f\tQLoad: %.5f \n", -PQLossLoad.get(0),
 				PQLossLoad.get(2), -PQLossLoad.get(1), PQLossLoad.get(3));
 	}
 
