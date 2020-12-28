@@ -75,9 +75,9 @@ public class ModifiedNR {
 			
 			ArrayList<ArrayList<DerivativeStructure>> pq = createEquations4(buses,
 					Admittance.createMadmittance(cAdmittances), Admittance.createTadmittance(cAdmittances));
-			
 
-			double[] mismatches = calculateMismatchMatrix2(buses, wi, w0, v0, pq, PQLossLoad,indexes);
+
+			double[] mismatches = calculateMismatchMatrix2(buses, pq, PQLossLoad,indexes);
 
 			RealMatrix fx0 = new Array2DRowRealMatrix(mismatches);
 			
@@ -103,7 +103,6 @@ public class ModifiedNR {
 			
 			updateUnknowns(X1, buses, deltaVoltageOrders, indexes, params, order);
 		
-			
 			System.out.println("x1=\t"+X1);
 			System.out.println("fx0=\t"+fx0);
 			
@@ -145,8 +144,8 @@ public class ModifiedNR {
 	public static void setActiveReactiveGen(ArrayList<Bus> buses, double wi, double w0, double v0) {
 		for (Bus b : buses) {
 			if (b.type == 2) {
-				b.p = 0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) );		
-				b.q = 0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ) ;
+				b.p = Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),1.0);		
+				b.q = Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),0.5) ;
 //				System.out.printf("\tb.p=%f\t b.q=%f\t\n",b.p,b.q);
 //				System.out.printf("Voltage = %.2f\n",b.voltage.getValue());
 //				System.out.printf("Frequency = %.2f \n",wi);
@@ -168,13 +167,13 @@ public class ModifiedNR {
 		double alpha = 1.0;
 		double beta = 1.0;
 		double kpf = 1.0;
-		double kqf = -1.5;
+		double kqf = -1.0;
 		
 		for (int k = 0; k < buses.size(); k++) {
 			if (buses.get(k).type == 1) {
-				buses.get(k).p = buses.get(k).p * Math.pow(buses.get(k).voltage.getValue() / v0, alpha) * (1 + kpf * (w - w0));
+				buses.get(k).p = buses.get(k).nominal_p * Math.pow(buses.get(k).voltage.getValue() / v0, alpha) * (1 + kpf * (w - w0));
 				PLoad += buses.get(k).p;
-				buses.get(k).q = buses.get(k).q * Math.pow(buses.get(k).voltage.getValue() / v0, beta) * (1 + kqf * (w - w0));
+				buses.get(k).q = buses.get(k).nominal_q * Math.pow(buses.get(k).voltage.getValue() / v0, beta) * (1 + kqf * (w - w0));
 				QLoad += buses.get(k).q;
 			}
 		}
@@ -211,8 +210,8 @@ public class ModifiedNR {
 		return PQLossLoad;
 	}
 
-	public static double[] calculateMismatchMatrix2(ArrayList<Bus> Buses, double w, double w0, double v0,
-			ArrayList<ArrayList<DerivativeStructure>> pq, ArrayList<Double> PQLossLoad,ArrayList<ArrayList<Integer>> indexes) {
+	public static double[] calculateMismatchMatrix2(ArrayList<Bus> Buses,ArrayList<ArrayList<DerivativeStructure>> pq,
+			ArrayList<Double> PQLossLoad,ArrayList<ArrayList<Integer>> indexes) {
 		ArrayList<Integer> pS = new ArrayList<Integer>();
 		pS.addAll(indexes.get(2));
 		pS.addAll(indexes.get(1));

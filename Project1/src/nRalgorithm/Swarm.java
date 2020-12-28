@@ -49,21 +49,18 @@ public class Swarm {
 		return bestPosition;
 	}
 
-
 	public double getBestFitness() {
 		return bestFitness;
 	}
-
 
 	public void setBestPosition(double[] bestPosition) {
 		this.bestPosition = bestPosition;
 	}
 
-
 	public void setBestFitness(double bestFitness) {
 		this.bestFitness = bestFitness;
 	}
-
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -76,7 +73,6 @@ public class Swarm {
 		result = prime * result + ((random == null) ? 0 : random.hashCode());
 		return result;
 	}
-
 
 	@Override
 	public boolean equals(Object obj) {

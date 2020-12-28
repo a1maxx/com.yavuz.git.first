@@ -35,14 +35,14 @@ public class ModifiedNR2 {
 
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 		// PV BUS
-		buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.1));
+		buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.0));
 		// Droop Bus
-		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, 0.0692791530265256, 0.40898603960680735));
-		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, -0.0692791530265256, 0.40898603960680735));
-		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 0.0692791530265256, 0.40898603960680735));
+		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, 0.06, 0.4));
+		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, 0.06, 0.4));
+		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 0.06, 0.4));
 		// PQ Bus
-		buses.add(new Bus(1, 8, theta.length * 2, -0.8, -0.1));
-		buses.add(new Bus(1, 10, theta.length * 2, -0.5, -0.2));
+		buses.add(new Bus(1, 8, theta.length * 2, -0.5, -0.05));
+		buses.add(new Bus(1, 10, theta.length * 2, -0.2, -0.2));
 
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -53,9 +53,9 @@ public class ModifiedNR2 {
 		double wi = 1;
 		long cur = System.currentTimeMillis();
 		
-		for (int i = 1; i < 50; i++) {
+		for (int i = 1; i <= 15; i++) {
 			double w0 = 1.0;
-			double v0 = 1.1;
+			double v0 = 1.01;
 
 			Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix(radmittances, xadmittances, wi);
 
@@ -63,12 +63,12 @@ public class ModifiedNR2 {
 
 			RealMatrix X0 = ModifiedNR.setUnknownValues(buses, deltaVoltageOrders, wi, buses.get(0).voltage.getValue());
 
+			PQLossLoad = ModifiedNR.calculatePQLossLoad(cAdmittances, buses, wi);
+			
 			ArrayList<ArrayList<DerivativeStructure>> pq = ModifiedNR.createEquations4(buses,
 					Admittance.createMadmittance(cAdmittances), Admittance.createTadmittance(cAdmittances));
 
-			PQLossLoad = ModifiedNR.calculatePQLossLoad(cAdmittances, buses, wi);
-
-			double[] mismatches = ModifiedNR.calculateMismatchMatrix2(buses, wi, w0, v0, pq, PQLossLoad, indexes);
+			double[] mismatches = ModifiedNR.calculateMismatchMatrix2(buses, pq, PQLossLoad, indexes);
 
 			RealMatrix fx0 = new Array2DRowRealMatrix(mismatches);
 
@@ -110,6 +110,8 @@ public class ModifiedNR2 {
 		System.out.printf("\n\nPLoss: %.5f\tPLoad: %.5f\n"
 				+ "QLoss: %.5f\tQLoad: %.5f \n", -PQLossLoad.get(0),
 				PQLossLoad.get(2), -PQLossLoad.get(1), PQLossLoad.get(3));
+		System.out.printf("\nSteady state system frequency: %.5f\n",wi);
+		
 	}
 
 }

@@ -84,7 +84,7 @@ public class MicrogridFitnessFunction implements FitnessFunction{
 			
 			PQLossLoad = ModifiedNR.calculatePQLossLoad(cAdmittances, buses, wi);
 			
-			mismatches = ModifiedNR.calculateMismatchMatrix2(buses, wi, w0, v0, pq, PQLossLoad,indexes);
+			mismatches = ModifiedNR.calculateMismatchMatrix2(buses, pq, PQLossLoad,indexes);
 
 			RealMatrix fx0 = new Array2DRowRealMatrix(mismatches);
 			

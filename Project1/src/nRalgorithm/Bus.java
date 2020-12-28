@@ -12,7 +12,7 @@ public class Bus {
 	public int type;
 	public RealMatrix admittance;
 	public RealMatrix theta;
-	double p, q;
+	double p, q,nominal_p,nominal_q;
 	public DerivativeStructure voltage;
 	public DerivativeStructure delta;
 	public int index;
@@ -239,6 +239,8 @@ public class Bus {
 		this.type = type;
 		this.index = index;
 		this.p = P;
+		this.nominal_p=P;
+		this.nominal_q=Q;
 		this.q = Q;
 		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
 		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
