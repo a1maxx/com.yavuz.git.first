@@ -115,6 +115,7 @@ public class ModifiedNR {
 		}
 
 	}
+	
 
 	public static ArrayList<ArrayList<Integer>> identifyNet(ArrayList<Bus> buses) {
 
@@ -144,8 +145,8 @@ public class ModifiedNR {
 	public static void setActiveReactiveGen(ArrayList<Bus> buses, double wi, double w0, double v0) {
 		for (Bus b : buses) {
 			if (b.type == 2) {
-				b.p = Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),1.0);		
-				b.q = Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),0.5) ;
+				b.p = Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),1.5);		
+				b.q = Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),1.5) ;
 //				System.out.printf("\tb.p=%f\t b.q=%f\t\n",b.p,b.q);
 //				System.out.printf("Voltage = %.2f\n",b.voltage.getValue());
 //				System.out.printf("Frequency = %.2f \n",wi);
@@ -161,7 +162,7 @@ public class ModifiedNR {
 
 		double PLoad = 0.0;
 		double QLoad = 0.0;
-		double v0 = 1.1;
+		double v0 = 1.01;
 		double w0 = 1.0;
 		
 		double alpha = 1.0;
