@@ -1,8 +1,11 @@
 package nRalgorithm;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.Scanner;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.complex.Complex;
@@ -17,12 +20,34 @@ public class ModifiedNR2 {
 		double pi = Math.PI;
 
 		Random random = new Random();
-
+		
 		double[][] xadmittances = new double[6][6];
 		double[][] theta = new double[6][6];
 		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		ArrayList<Double> PQLossLoad = null;
-
+		
+		
+//		File file = new File("/Users/my_mac/git/com.yavuz.git.first3/Project1/test.txt");
+//		try {
+//			Scanner scan = new Scanner(file);
+//			for (int i = 0; i < xadmittances.length; i++) {
+//				for (int j = 0; j < xadmittances[1].length; j++) {
+//					xadmittances[i][j] = scan.nextDouble();
+//					
+//				}
+//			}
+//			for (int i = 0; i < xadmittances.length; i++) {
+//				for (int j = 0; j < xadmittances[1].length; j++) {
+//					radmittances[i][j]= scan.nextDouble();
+//					theta[i][j] = Admittance.getAng(new Complex(radmittances[i][j],xadmittances[i][j]));
+//				}
+//			}
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		}
+//		
+		
+		
 		for (int i = 0; i < xadmittances.length; i++) {
 			for (int j = 0; j < xadmittances[1].length; j++) {
 				xadmittances[i][j] = i == j ? 0 : (random.nextDouble() + 0.5);
@@ -42,7 +67,7 @@ public class ModifiedNR2 {
 		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 0.05, 0.5));
 		// PQ Bus
 		buses.add(new Bus(1, 8, theta.length * 2, -0.1, -0.1));
-		buses.add(new Bus(1, 10, theta.length * 2, -2, -0.3));
+		buses.add(new Bus(1, 10, theta.length * 2, -0.2, -0.3));
 
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
