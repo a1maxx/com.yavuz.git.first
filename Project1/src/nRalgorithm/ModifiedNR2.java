@@ -29,7 +29,6 @@ public class ModifiedNR2 {
 		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		ArrayList<Double> PQLossLoad = null;
 
-//		
 		File file = new File("/Users/my_mac/git/com.yavuz.git.first/Project1/test2.txt");
 		try {
 			Scanner scan = new Scanner(file);
@@ -49,10 +48,10 @@ public class ModifiedNR2 {
 			e.printStackTrace();
 		}
 
-		double[] mp = new double[200];
-		double[] nq = new double[200];
+		double[] mp = new double[300];
+		double[] nq = new double[300];
 		for (int i = 0; i < mp.length; i++)
-			mp[i] = random.nextDouble() * 0.01;
+			mp[i] = random.nextDouble()*0.1;
 		for (int i = 0; i < nq.length; i++)
 			nq[i] = random.nextDouble();
 		outerloop:
@@ -61,17 +60,15 @@ public class ModifiedNR2 {
 			RealMatrix X1 = null;
 			ArrayList<Bus> buses = new ArrayList<Bus>();
 			// PV Buses
-			buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.02));
+			buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.0));
 			// Droop Buses
 			buses.add(new Bus(2, 2, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)]));
 			buses.add(new Bus(2, 4, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)]));
 			buses.add(new Bus(2, 6, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)]));
 			// PQ Buses
-			buses.add(new Bus(1, 8, theta.length * 2, -0.0325, -0.00618));
-			buses.add(new Bus(1, 10, theta.length * 2, -0.0441, -0.00828));
+			buses.add(new Bus(1, 8, theta.length * 2, -0.325, -0.0618));
+			buses.add(new Bus(1, 10, theta.length * 2, -0.244, -0.0828));
 
-//		buses.add(new Bus(1, 8, theta.length * 2, -0.0, -0.0));
-//		buses.add(new Bus(1, 10, theta.length * 2, -0.0, -0.0));
 
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -113,8 +110,11 @@ public class ModifiedNR2 {
 					try {
 
 						X1 = X0.subtract(MatrixUtils.inverse(JJ).multiply(fx0));
-						if (Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))) {
-							System.out.printf("DIVERGED at iteration %d\n",m);
+						if (Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))
+								|| Math.abs(X1.getEntry(X1.getRowDimension() - 2, 0))
+										+ Math.abs(X1.getEntry(X1.getRowDimension() - 1, 0)) > 3
+								|| ModifiedNR.sumMatrix(fx0) >  1.5) {
+							System.out.printf("DIVERGED at iteration %d\n", m);
 							break innerloop;
 						}
 					} catch (MatrixDimensionMismatchException | DimensionMismatchException | NullArgumentException e) {
@@ -143,9 +143,7 @@ public class ModifiedNR2 {
 						}
 						System.out.println();
 					}
-					System.out.println("Frequency: " + wi);
-
-//				System.exit(0);
+				
 					break innerloop;
 
 				}
@@ -157,21 +155,12 @@ public class ModifiedNR2 {
 
 				ModifiedNR.updateUnknowns(X1, buses, deltaVoltageOrders, indexes, params, order);
 
-//				System.out.println("\nMismatches = " + fx0);
-
-//				for (int j = 0; j < X1.getRowDimension(); j++) {
-//					if (j < deltaVoltageOrders.get(0).size())
-//						System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j),
-//								X1.getEntry(j, 0) * 180 / Math.PI, i);
-//					else
-//						System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j), X1.getEntry(j, 0),
-//								i);
-//				}
-//				System.out.printf("%s%n", "------------------------------------------------");
-
 			}
 		
-			if (!Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))) {
+			if (!(Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))
+					|| Math.abs(X1.getEntry(X1.getRowDimension() - 2, 0))
+					+ Math.abs(X1.getEntry(X1.getRowDimension() - 1, 0)) > 3
+					|| ModifiedNR.sumMatrix(fx0) > 1.5)) {
 				System.out.println("Total Time Elapsed (in msec) : " + (System.currentTimeMillis() - cur));
 				for (Bus b : buses) {
 					System.out.printf(

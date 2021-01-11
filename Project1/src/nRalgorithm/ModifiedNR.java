@@ -145,11 +145,8 @@ public class ModifiedNR {
 	public static void setActiveReactiveGen(ArrayList<Bus> buses, double wi, double w0, double v0) {
 		for (Bus b : buses) {
 			if (b.type == 2) {
-				b.p = Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),10E2);		
-				b.q = Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),10E2) ;
-//				System.out.printf("\tb.p=%f\t b.q=%f\t\n",b.p,b.q);
-//				System.out.printf("Voltage = %.2f\n",b.voltage.getValue());
-//				System.out.printf("Frequency = %.2f \n",wi);
+				b.p = Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),1.5);		
+				b.q = Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),1.5) ;
 			}
 		}
 
