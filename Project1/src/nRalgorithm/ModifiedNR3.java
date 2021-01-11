@@ -3,7 +3,6 @@ package nRalgorithm;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Scanner;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
@@ -20,16 +19,12 @@ public class ModifiedNR3 {
 
 	public static void main(String[] args) {
 
-		double pi = Math.PI;
-
-		Random random = new Random();
-
 		double[][] xadmittances = new double[6][6];
 		double[][] theta = new double[6][6];
 		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		ArrayList<Double> PQLossLoad = null;
 
-//		
+		
 		File file = new File("/Users/my_mac/git/com.yavuz.git.first/Project1/test2.txt");
 		try {
 			Scanner scan = new Scanner(file);
@@ -45,6 +40,7 @@ public class ModifiedNR3 {
 					theta[i][j] = Admittance.getAng(new Complex(radmittances[i][j], xadmittances[i][j]));
 				}
 			}
+			scan.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -54,12 +50,12 @@ public class ModifiedNR3 {
 		// PV BUS
 		buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.0));
 		// Droop Bus
-		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, 0.006, 0.841));
-		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, 0.002, 0.931));
-		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 0.008, 0.715));
+		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, 0.33403, 0.79812));
+		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, 0.22014, 0.95650));
+		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 0.00855, 0.99023));
 		// PQ Bus
-		buses.add(new Bus(1, 8, theta.length * 2, -0.0325, -0.00618));
-		buses.add(new Bus(1, 10, theta.length * 2, -0.0441, -0.00828));
+		buses.add(new Bus(1, 8, theta.length * 2, -0.0825, -0.0618));
+		buses.add(new Bus(1, 10, theta.length * 2, -0.0244, -0.0828));
 
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -72,7 +68,7 @@ public class ModifiedNR3 {
 		
 		long cur = System.currentTimeMillis();
 		
-		innerloop: for (int i = 1; i <= 500; i++) {
+		innerloop: for (int i = 1; i <= 1000; i++) {
 			double w0 = 1.0;
 			double v0 = 1.01;
 
