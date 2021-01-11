@@ -106,8 +106,45 @@ public class Admittance {
 		
 		return new Array2DRowRealMatrix(tAdmittance);
 	}
-	
-	
+
+	public static Complex[][] constructComplexAdmittanceMatrix2(double[][] radmittances, double[][] xadmittances,
+			double w) {
+		Complex[][] cAdmittances = new Complex[radmittances.length][radmittances[1].length];
+		
+	for (int i = 0; i < radmittances.length; i++) {
+			for (int j = 0; j < radmittances[1].length; j++) {
+				if (i != j && (radmittances[i][j] !=0 || xadmittances [i][j]!=0)) {
+					Complex temp = new Complex(radmittances[i][j], xadmittances[i][j] * w);
+					cAdmittances[i][j] = temp.pow(-1).multiply(-1);
+				}else if(i!=j){
+					cAdmittances[i][j] = new Complex(0,0);
+				}
+			}
+
+		}
+		for (int i = 0; i < radmittances.length; i++) {
+			for (int j = 0; j < radmittances[1].length; j++) {
+				if (i == j ) {
+					Complex temp0 = new Complex(0, 0);
+					for (int k = 0; k < radmittances.length; k++) {
+						for (int l = 0; l < radmittances[1].length; l++) {
+							if ( k!=l && k == i && (radmittances[k][l] != 0 || xadmittances [k][l]!=0)) {
+								temp0 = temp0.add((new Complex(radmittances[k][l], xadmittances[k][l] * w)).pow(-1));
+							}
+
+						}
+					}
+					
+					cAdmittances[i][j] = radmittances[i][j] * xadmittances[i][j] != 0
+							? temp0.add(new Complex(radmittances[i][j], xadmittances[i][j] * w).pow(-1))
+							: temp0;
+				}
+			}
+
+		}
+
+		return cAdmittances;
+	}
 	
 }
 

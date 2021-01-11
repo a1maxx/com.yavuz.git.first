@@ -1,7 +1,12 @@
 package nRalgorithm;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
+import java.util.Scanner;
+
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.complex.Complex;
@@ -67,10 +72,73 @@ public class Sketch {
 //			}
 //			System.out.printf("\n");
 //		}
-		System.out.println(Admittance.polarToComplex(1.01238, -1.47170*Math.PI/180).getReal());
+//		System.out.println(Admittance.polarToComplex(1.01238, -1.47170*Math.PI/180).getReal());
+		double[][] xadmittances = new double[6][6];
+		double[][] theta = new double[6][6];
+		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		
+		File file = new File("/Users/my_mac/git/com.yavuz.git.first/Project1/test.txt");
+		try {
+			Scanner scan = new Scanner(file);
+			for (int i = 0; i < xadmittances.length; i++) {
+				for (int j = 0; j < xadmittances[1].length; j++) {
+					xadmittances[i][j] = scan.nextDouble();
+					
+				}
+			}
+			for (int i = 0; i < xadmittances.length; i++) {
+				for (int j = 0; j < xadmittances[1].length; j++) {
+					radmittances[i][j]= scan.nextDouble();
+					theta[i][j] = Admittance.getAng(new Complex(radmittances[i][j],xadmittances[i][j]));
+				}
+			}
+			
+//			for (int i = 0; i < xadmittances.length; i++) {
+//				for (int j = 0; j < xadmittances[1].length; j++) {
+//					System.out.print(radmittances[i][j]+ " " + xadmittances[i][j]+"\t");
+//				}
+//				System.out.println();
+//			}			
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix2(radmittances, xadmittances, 1);
+		for (int i = 0; i < xadmittances.length; i++) {
+			for (int j = 0; j < xadmittances[1].length; j++) {
+				System.out.print(cAdmittances[i][j]);
+			}
+			System.out.println();
+		}		
+		
+		Random random= new Random();
+		
+		for (int i = 0; i < xadmittances.length; i++) {
+			for (int j = 0; j < xadmittances[1].length; j++) {
+				xadmittances[i][j] = i == j ? 0 : (random.nextDouble() + 0.5);
+			}
+		}
+
+		for (int i = 0, len = radmittances.length; i < len; i++)
+			Arrays.fill(radmittances[i], (random.nextDouble()+1)*0.2);		
+		
+		for (int i = 0; i < xadmittances.length; i++) {
+			for (int j = 0; j < xadmittances[1].length; j++) {
+				theta[i][j] = Admittance.getAng(new Complex(radmittances[i][j],xadmittances[i][j]));
+			}
+		}
+		System.out.println("---------------------------------------------------------------------------------------");
+		cAdmittances = Admittance.constructComplexAdmittanceMatrix2(radmittances, xadmittances, 1);
+		for (int i = 0; i < xadmittances.length; i++) {
+			for (int j = 0; j < xadmittances[1].length; j++) {
+				System.out.print(cAdmittances[i][j]);
+			}
+			System.out.println();
+		}		
+
 		
 	}
+	
 
 	
 
