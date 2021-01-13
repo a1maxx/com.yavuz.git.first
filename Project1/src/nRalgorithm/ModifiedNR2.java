@@ -52,14 +52,18 @@ public class ModifiedNR2 {
 		double [] best_mp = new double[3];
 		double [] best_nq = new double[3];
  		double min_mismatch = Double.MAX_VALUE;
- 
- 		int n_root = 3000;
-		double[] mp = new double[n_root];
+ 		double min_volDev = Double.MAX_VALUE;
+ 		
+ 		double eps = 2;
+ 		int n_root = 5000;
+ 		double treat=0.00;
+		
+ 		double[] mp = new double[n_root];
 		double[] nq = new double[n_root];
 		for (int i = 0; i < mp.length; i++)
-			mp[i] = random.nextDouble();
+			mp[i] = random.nextDouble()*2;
 		for (int i = 0; i < nq.length; i++)
-			nq[i] = random.nextDouble();
+			nq[i] = random.nextDouble()*2;
 //		outerloop:
 		for (int m = 0; m < mp.length; m++) {
 			
@@ -72,9 +76,9 @@ public class ModifiedNR2 {
 			buses.add(new Bus(2, 4, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)]));
 			buses.add(new Bus(2, 6, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)]));
 			// PQ Buses
-			buses.add(new Bus(1, 8, theta.length * 2, -0.0825, -0.0618));
-			buses.add(new Bus(1, 10, theta.length * 2, -0.0244, -0.0828));
 
+			buses.add(new Bus(1, 8, theta.length * 2, -0.1453-treat, -0.0828-treat));
+			buses.add(new Bus(1, 10, theta.length * 2, -0.2014-treat, -0.1074-treat));
 
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -86,7 +90,7 @@ public class ModifiedNR2 {
 			double wi = 1;
 			long cur = System.currentTimeMillis();
 			innerloop:
-			for (int i = 1; i <= 75; i++) {
+			for (int i = 1; i <= 10; i++) {
 				double w0 = 1.0;
 				double v0 = 1.01;
 
@@ -118,8 +122,8 @@ public class ModifiedNR2 {
 						X1 = X0.subtract(MatrixUtils.inverse(JJ).multiply(fx0));
 						if (Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))
 								|| Math.abs(X1.getEntry(X1.getRowDimension() - 2, 0))
-										+ Math.abs(X1.getEntry(X1.getRowDimension() - 1, 0)) > 3
-								|| ModifiedNR.sumMatrix(fx0) >  1) {
+										+ Math.abs(X1.getEntry(X1.getRowDimension() - 1, 0)) > eps
+								|| ModifiedNR.sumMatrix(fx0) >  eps) {
 							System.out.printf("\nDIVERGED at iteration %d", m);
 							break innerloop;
 						}
@@ -165,32 +169,15 @@ public class ModifiedNR2 {
 		
 			if (!(Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))
 					|| Math.abs(X1.getEntry(X1.getRowDimension() - 2, 0))
-					+ Math.abs(X1.getEntry(X1.getRowDimension() - 1, 0)) > 3
-					|| ModifiedNR.sumMatrix(fx0) > 0.5)) {
-				System.out.printf("\nSolution found in: %d msec \t\t <<<<<<<<<********>>>>>>>>>",(System.currentTimeMillis() - cur));
-//				for (Bus b : buses) {
-//					System.out.printf(
-//							"\nBus index: %d \t Bus type: %s\n" + "Bus Voltage: %.4f\n" + "Bus Active Power: %.4f\n"
-//									+ "Bus Reactive Power: %.4f\n"
-//									+ "-------------------------------------------------",
-//							buses.indexOf(b), b.type == 0 ? "PV" : b.type == 1 ? "PQ" : "DROOP", b.voltage.getValue(),
-//							b.p, b.q);
-//
-//				}
-//				for(Bus b: buses) {
-//					if(b.type==2)
-//						System.out.printf("\nDroop coefficients of bus %d  \t mp: %.5f nq: %.5f\n",buses.indexOf(b),b.mp,b.nq);
-//					
-//				}
-//				System.out.println("\nFinal Mismatches: " + fx0);
-//				System.out.println("Mismatch Summation: " + ModifiedNR.sumMatrix(fx0));
-//				System.out.printf("\n\nPLoss: %.5f\tPLoad: %.5f\n" + "QLoss: %.5f\tQLoad: %.5f \n", -PQLossLoad.get(0),
-//						PQLossLoad.get(2), -PQLossLoad.get(1), PQLossLoad.get(3));
-//				System.out.printf("\n\nTotal Active Power Demand: %.5f\n" + "Total Reactive Power Demand: %.5f \n",
-//						-PQLossLoad.get(0) + PQLossLoad.get(2), -PQLossLoad.get(1) + PQLossLoad.get(3));
-//				System.out.printf("\nSteady state system frequency: %.5f\n", wi);
-//				System.out.printf("Steady state reference voltage value: %.5f\n", buses.get(0).voltage.getValue());
-				if(ModifiedNR.sumMatrix(fx0)<min_mismatch) {
+					+ Math.abs(X1.getEntry(X1.getRowDimension() - 1, 0)) > eps
+					|| ModifiedNR.sumMatrix(fx0) > eps)) {
+				
+				System.out.printf("\n\nSolution found in: %d msec",(System.currentTimeMillis() - cur));
+				System.out.printf("\nSteady state reference voltage value: %.5f", buses.get(0).voltage.getValue());
+				System.out.printf("\nSteady state system frequency: %.5f", wi);
+				System.out.printf("\nmp_1: %.5f \t mp_2: %.5f \t mp_3: %.5f",buses.get(1).mp,buses.get(2).mp,buses.get(3).mp);
+				System.out.printf("\nnq_1: %.5f \t nq_2: %.5f \t nq_3 : %.5f\n",buses.get(1).nq,buses.get(2).nq,buses.get(3).nq);
+				if(ModifiedNR.sumMatrix(fx0)<min_mismatch && Math.abs(1-buses.get(0).voltage.getValue()) < min_volDev) {
 					best_mp[0] = buses.get(1).mp;
 					best_mp[1] = buses.get(2).mp;
 					best_mp[2] = buses.get(3).mp;
@@ -198,16 +185,18 @@ public class ModifiedNR2 {
 					best_nq[1] = buses.get(2).nq;
 					best_nq[2] = buses.get(3).nq;
 					min_mismatch = ModifiedNR.sumMatrix(fx0);
+					min_volDev = Math.abs(1-buses.get(0).voltage.getValue());
 				}
-				//break outerloop;
+				
 			}
 
 			
 		}
 		
 
-			System.out.printf("\nmp_1: %.5f \t mp_2: %.5f \t mp_3: %.5f",best_mp[0],best_mp[1],best_mp[2]);
+			System.out.printf("\n\nmp_1: %.5f \t mp_2: %.5f \t mp_3: %.5f",best_mp[0],best_mp[1],best_mp[2]);
 			System.out.printf("\nnq_1: %.5f \t nq_2: %.5f \t nq_3 : %.5f",best_nq[0],best_nq[1],best_nq[2]);
-			System.out.printf("\nMinimum mismatch (in 50 iterations): %.5f",min_mismatch);
+			System.out.printf("\nMinimum mismatch (in 10 iterations): %.5f",min_mismatch);
+			System.out.printf("\nMinimum volDev (in 10 iterations): %.5f",min_volDev);
 	}
 }

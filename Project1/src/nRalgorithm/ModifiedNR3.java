@@ -49,13 +49,17 @@ public class ModifiedNR3 {
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 		// PV BUS
 		buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.0));
-		// Droop Bus
-		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, 0.33403, 0.79812));
-		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, 0.22014, 0.95650));
-		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 0.00855, 0.99023));
+		// Droop Bus  9.4E-4 0.0013
+		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, 1.96240 , 0.71361));
+		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, 0.94720 , 1.07049));
+		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 0.32327, 1.21850));
+//		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, 9.4E-3, 0.0013));
+//		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, 9.4E-3, 0.0013));
+//		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 9.4E-3, 0.0013));
+		
 		// PQ Bus
-		buses.add(new Bus(1, 8, theta.length * 2, -0.0825, -0.0618));
-		buses.add(new Bus(1, 10, theta.length * 2, -0.0244, -0.0828));
+		buses.add(new Bus(1, 8, theta.length * 2, -0.01453, -0.00828));
+		buses.add(new Bus(1, 10, theta.length * 2, -0.02014, -0.01074));
 
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -64,11 +68,18 @@ public class ModifiedNR3 {
 		int order = 2;
 		RealMatrix fx0 = null;
 		double[][] Jacobian = null;
-		double wi = 1;
+		double wi = 1.0;
+		
+		double prev_Mismatches=Double.MAX_VALUE;
+		RealMatrix prevX1 = new Array2DRowRealMatrix(12,1);
+		boolean flag = true;
+		double tolerance = 0.01;
+		RealMatrix prevfx0 = null;
 		
 		long cur = System.currentTimeMillis();
 		
-		innerloop: for (int i = 1; i <= 1000; i++) {
+		
+		innerloop: for (int i = 1; i <= 400 && flag; i++) {
 			double w0 = 1.0;
 			double v0 = 1.01;
 
@@ -132,31 +143,55 @@ public class ModifiedNR3 {
 
 			}
 
-			wi = X1.getEntry(X1.getRowDimension() - 2, 0);
+			if (prev_Mismatches + tolerance < ModifiedNR.sumMatrix(fx0) ){
+				System.out.println("Missed the local optimum. Exiting...");
+				System.out.printf("Rejected sum of mismatches: %.5f",ModifiedNR.sumMatrix(fx0));
+				X1 = prevX1;
+				flag =false;
+				
+				
+			}
+			else if (ModifiedNR.sumMatrix(fx0) < 1E-6) {
+				System.out.println("Full convergence achieved. Exiting...");
+				flag = false;
+			} else {
+				System.out.println("Difference: " + X1.subtract(prevX1));
+				prevX1 = X1;
+				prevfx0 = fx0;
+				prev_Mismatches = ModifiedNR.sumMatrix(fx0);
 
-			buses.get(0).voltage = new DerivativeStructure(params, order, 1, X1.getEntry(X1.getRowDimension() - 1, 0));
+				wi = X1.getEntry(X1.getRowDimension() - 2, 0);
 
-			ModifiedNR.updateUnknowns(X1, buses, deltaVoltageOrders, indexes, params, order);
+				buses.get(0).voltage = new DerivativeStructure(params,
+						order, 1,
+						X1.getEntry(X1.getRowDimension() - 1, 0));
 
-//			System.out.println("\nMismatches = " + fx0);
-//			for (int j = 0; j < X1.getRowDimension(); j++) {
-//				if (j < deltaVoltageOrders.get(0).size())
-//					System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j),
-//							X1.getEntry(j, 0) * 180 / Math.PI, i);
-//				else
-//					System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j), X1.getEntry(j, 0), i);
-//			}
-//			System.out.printf("%s%n", "------------------------------------------------");
+				ModifiedNR.updateUnknowns(X1, buses, deltaVoltageOrders, indexes, params, order);
+			}
+			
+			System.out.printf("\nLatest sum of mismatches = %.5f \n\n", prev_Mismatches);
+			for (int j = 0; j < X1.getRowDimension(); j++) {
+				if (j < deltaVoltageOrders.get(0).size())
+					System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j),
+							X1.getEntry(j, 0) * 180 / Math.PI, i);
+				else
+					System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j), X1.getEntry(j, 0), i);
+			}
+			System.out.printf("%s%n", "------------------------------------------------");
 
+
+			
+			
 		}
 		if (!Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))) {
 			System.out.println("Total Time Elapsed (in msec) : " + (System.currentTimeMillis() - cur));
 			for (Bus b : buses) {
 				System.out.printf(
-						"\nBus index: %d \t Bus type: %s\n" + "Bus Voltage= %.4f\n" + "Bus Active Power: %.4f\n"
-								+ "Bus Reactive Power: %.4f\n" + "-------------------------------------------------",
-						buses.indexOf(b), b.type == 0 ? "PV" : b.type == 1 ? "PQ" : "DROOP", b.voltage.getValue(), b.p,
-						b.q);
+						"\nBus index: %d \t Bus type: %s\n" + "Bus Voltage: %.4f\n" + "Bus Angle: %.5f\n"
+								+ "Bus Active Power: %.4f\n" + "Bus Reactive Power: %.4f\n"
+								+ "-------------------------------------------------",
+						buses.indexOf(b), b.type == 0 ? "PV" : b.type == 1 ? "PQ" : "DROOP", b.voltage.getValue(),
+						b.delta.getValue() * 180.0/Math.PI  , b.p, b.q);
 
 			}
 
@@ -165,8 +200,8 @@ public class ModifiedNR3 {
 					System.out.printf("\nDroop coefficients of bus %d  \t mp: %.5f nq: %.5f\n", buses.indexOf(b), b.mp,
 							b.nq);
 
-			System.out.println("\nFinal Mismatches = " + fx0);
-			System.out.println("\nMismatch Summation: " + ModifiedNR.sumMatrix(fx0));
+			System.out.println("\nFinal Mismatches = " + prevfx0);
+			System.out.println("\nMismatch Summation: " + prev_Mismatches);
 			System.out.printf("\nPLoss: %.5f\tPLoad: %.5f\n" + "QLoss: %.5f\tQLoad: %.5f \n", -PQLossLoad.get(0),
 					PQLossLoad.get(2), -PQLossLoad.get(1), PQLossLoad.get(3));
 			System.out.printf("\nTotal Active Power Demand: %.5f\n" + "Total Reactive Power Demand: %.5f \n",

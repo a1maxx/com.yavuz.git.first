@@ -145,8 +145,8 @@ public class ModifiedNR {
 	public static void setActiveReactiveGen(ArrayList<Bus> buses, double wi, double w0, double v0) {
 		for (Bus b : buses) {
 			if (b.type == 2) {
-				b.p = Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),1.5);		
-				b.q = Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),1.5) ;
+				b.p = Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),10E5);		
+				b.q = Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),10E5) ;
 			}
 		}
 
@@ -159,7 +159,7 @@ public class ModifiedNR {
 
 		double PLoad = 0.0;
 		double QLoad = 0.0;
-		double v0 = 1.01;
+		double v0 = 1.0;
 		double w0 = 1.0;
 		
 		double alpha = 0.0;
@@ -257,15 +257,7 @@ public class ModifiedNR {
 		mismatches[nofP+nofQ] = pTot + pSys;
 		mismatches[nofP+nofQ + 1] = qTot + qSys;
 
-//		System.out.printf("Ptotal:\t%f \nQtotal:\t %f\n", pTot, qTot);
-//		System.out.printf("Psys:\t%f \nQsys:\t %f\n", pSys, qSys);
-//		System.out.printf("Ptot-Psys:\t%f\n", mismatches[nofP+nofQ]);
-//		System.out.printf("Qtot-Qsys:\t%f\n", mismatches[nofP+nofQ + 1]);
-//		System.out.printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-//		for (int i = 0; i < mismatches.length; i++) {
-//			System.out.print(mismatches[i] + "\t");
-//		}
-//		System.out.println();
+
 		return mismatches;
 	}
 	
@@ -858,6 +850,7 @@ public class ModifiedNR {
 
 		return pq;
 	}
+	
 	
 	public static RealMatrix setUnknownValues(ArrayList<Bus> buses,ArrayList<ArrayList<Integer[]>> deltaVoltageOrders,double w,double v1){
 		int nofD = deltaVoltageOrders.get(0).size();
