@@ -145,8 +145,8 @@ public class ModifiedNR {
 	public static void setActiveReactiveGen(ArrayList<Bus> buses, double wi, double w0, double v0) {
 		for (Bus b : buses) {
 			if (b.type == 2) {
-				b.p = Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),10E5);		
-				b.q = Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),10E5) ;
+				b.p = Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),b.qMax);		
+				b.q = Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),b.qMax) ;
 			}
 		}
 
@@ -228,7 +228,11 @@ public class ModifiedNR {
 			if (b.type == 2 && b.index!=0) {
 				pSys += b.p;
 				qSys += b.q;
+			} else if(b.type==0) {
+				pSys += b.p;
+				qSys += b.q;
 			}
+			
 		}
 
 		int nofP = pq.get(0).size();

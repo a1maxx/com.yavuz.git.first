@@ -29,7 +29,7 @@ public class ModifiedNR2 {
 		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		ArrayList<Double> PQLossLoad = null;
 
-		File file = new File("/Users/my_mac/git/com.yavuz.git.first/Project1/test2.txt");
+		File file = new File("/Users/my_mac/git/com.yavuz.git.first/Project1/test.txt");
 		try {
 			Scanner scan = new Scanner(file);
 			for (int i = 0; i < xadmittances.length; i++) {
@@ -38,8 +38,8 @@ public class ModifiedNR2 {
 
 				}
 			}
-			for (int i = 0; i < xadmittances.length; i++) {
-				for (int j = 0; j < xadmittances[1].length; j++) {
+			for (int i = 0; i < radmittances.length; i++) {
+				for (int j = 0; j < radmittances[1].length; j++) {
 					radmittances[i][j] = scan.nextDouble();
 					theta[i][j] = Admittance.getAng(new Complex(radmittances[i][j], xadmittances[i][j]));
 				}
@@ -54,31 +54,34 @@ public class ModifiedNR2 {
  		double min_mismatch = Double.MAX_VALUE;
  		double min_volDev = Double.MAX_VALUE;
  		
- 		double eps = 2;
+ 		double eps = 1.0;
  		int n_root = 5000;
- 		double treat=0.00;
+ 		double treat=1.0;
 		
  		double[] mp = new double[n_root];
 		double[] nq = new double[n_root];
 		for (int i = 0; i < mp.length; i++)
-			mp[i] = random.nextDouble()*2;
+			mp[i] = random.nextDouble();
 		for (int i = 0; i < nq.length; i++)
-			nq[i] = random.nextDouble()*2;
+			nq[i] = random.nextDouble();
 //		outerloop:
 		for (int m = 0; m < mp.length; m++) {
 			
 			RealMatrix X1 = null;
 			ArrayList<Bus> buses = new ArrayList<Bus>();
 			// PV Buses
-			buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.0));
+//			buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.0));
+			buses.add(new Bus(1, 0, theta.length * 2, -0.03525369 * treat, -0.06188417 * treat));
+			
 			// Droop Buses
-			buses.add(new Bus(2, 2, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)]));
-			buses.add(new Bus(2, 4, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)]));
-			buses.add(new Bus(2, 6, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)]));
+			buses.add(new Bus(2, 2, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)],0.9));
+			buses.add(new Bus(2, 4, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)],0.9));
+			buses.add(new Bus(2, 6, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)],0.9));
 			// PQ Buses
 
-			buses.add(new Bus(1, 8, theta.length * 2, -0.1453-treat, -0.0828-treat));
-			buses.add(new Bus(1, 10, theta.length * 2, -0.2014-treat, -0.1074-treat));
+//			buses.add(new Bus(1, 8, theta.length * 2, -0.03525369*treat, -0.06188417*treat));
+			buses.add(new Bus(1, 8, theta.length * 2, -0.0 * treat, -0.0 * treat));  
+			buses.add(new Bus(1, 10, theta.length * 2, -0.04417614 * treat, -0.08281924 * treat));
 
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -90,7 +93,7 @@ public class ModifiedNR2 {
 			double wi = 1;
 			long cur = System.currentTimeMillis();
 			innerloop:
-			for (int i = 1; i <= 10; i++) {
+			for (int i = 1; i <= 8; i++) {
 				double w0 = 1.0;
 				double v0 = 1.01;
 
@@ -121,8 +124,6 @@ public class ModifiedNR2 {
 
 						X1 = X0.subtract(MatrixUtils.inverse(JJ).multiply(fx0));
 						if (Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))
-								|| Math.abs(X1.getEntry(X1.getRowDimension() - 2, 0))
-										+ Math.abs(X1.getEntry(X1.getRowDimension() - 1, 0)) > eps
 								|| ModifiedNR.sumMatrix(fx0) >  eps) {
 							System.out.printf("\nDIVERGED at iteration %d", m);
 							break innerloop;
@@ -168,8 +169,6 @@ public class ModifiedNR2 {
 			}
 		
 			if (!(Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))
-					|| Math.abs(X1.getEntry(X1.getRowDimension() - 2, 0))
-					+ Math.abs(X1.getEntry(X1.getRowDimension() - 1, 0)) > eps
 					|| ModifiedNR.sumMatrix(fx0) > eps)) {
 				
 				System.out.printf("\n\nSolution found in: %d msec",(System.currentTimeMillis() - cur));

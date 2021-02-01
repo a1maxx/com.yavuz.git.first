@@ -23,7 +23,7 @@ public class ModifiedNR3 {
 		double[][] theta = new double[6][6];
 		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		ArrayList<Double> PQLossLoad = null;
-
+		double treat=1.0;
 		
 		File file = new File("/Users/my_mac/git/com.yavuz.git.first/Project1/test2.txt");
 		try {
@@ -49,17 +49,18 @@ public class ModifiedNR3 {
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 		// PV BUS
 		buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.0));
-		// Droop Bus  9.4E-4 0.0013
-		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, 1.96240 , 0.71361));
-		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, 0.94720 , 1.07049));
-		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 0.32327, 1.21850));
+		// Droop Bus 9.4E-4 0.0013
+		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, .07181, .78455, 0.9));
+		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, .07248, .74936, 0.9));
+		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, .09492, .06811, 0.9));
 //		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, 9.4E-3, 0.0013));
 //		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, 9.4E-3, 0.0013));
 //		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, 9.4E-3, 0.0013));
 		
 		// PQ Bus
-		buses.add(new Bus(1, 8, theta.length * 2, -0.01453, -0.00828));
-		buses.add(new Bus(1, 10, theta.length * 2, -0.02014, -0.01074));
+		buses.add(new Bus(1, 8, theta.length * 2, -0.03525369*treat, -0.006188417*treat));
+		buses.add(new Bus(1, 10, theta.length * 2, -0.04417614*treat, -0.008281924*treat));
+		
 
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -151,7 +152,7 @@ public class ModifiedNR3 {
 				
 				
 			}
-			else if (ModifiedNR.sumMatrix(fx0) < 1E-6) {
+			else if (ModifiedNR.sumMatrix(fx0) < 1E-5) {
 				System.out.println("Full convergence achieved. Exiting...");
 				flag = false;
 			} else {
@@ -187,7 +188,7 @@ public class ModifiedNR3 {
 			System.out.println("Total Time Elapsed (in msec) : " + (System.currentTimeMillis() - cur));
 			for (Bus b : buses) {
 				System.out.printf(
-						"\nBus index: %d \t Bus type: %s\n" + "Bus Voltage: %.4f\n" + "Bus Angle: %.5f\n"
+						"\nBus index: %d \t Bus type: %s\n" + "Bus Voltage: %.4f\n" + "Bus Angle: %.4f\n"
 								+ "Bus Active Power: %.4f\n" + "Bus Reactive Power: %.4f\n"
 								+ "-------------------------------------------------",
 						buses.indexOf(b), b.type == 0 ? "PV" : b.type == 1 ? "PQ" : "DROOP", b.voltage.getValue(),

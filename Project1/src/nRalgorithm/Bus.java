@@ -18,11 +18,12 @@ public class Bus {
 	public int index;
 	public int order = 2;
 	double initialValue_d = 0.0;
-	double initialValue_v = 1.0;
+	double initialValue_v = 0.9729;
 	boolean slack = false;
 	Complex cVolt;
 	double mp;
 	double nq;
+	double qMax=0.0;
 
 	// Constructor of the bus objects
 	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q) {
@@ -211,7 +212,7 @@ public class Bus {
 		return equations;
 	}
 
-	Bus(int type,int index,int params, double P, double Q,double mp,double nq) {
+	Bus(int type,int index,int params, double P, double Q,double mp,double nq,double qmax) {
 		this.type = type;
 		this.index = index;
 		this.p = P;
@@ -221,7 +222,7 @@ public class Bus {
 		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
 		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
 		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
-
+		this.qMax = qmax;
 	}
 	
 	Bus(int type,int index,int params, double P, double Q,double V) {

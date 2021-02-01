@@ -146,5 +146,12 @@ public class Admittance {
 		return cAdmittances;
 	}
 	
+	
+	public void fillImpedance() {
+		
+		
+	}
+	
+	
 }
 
