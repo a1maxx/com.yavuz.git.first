@@ -29,7 +29,7 @@ public class ModifiedNR2 {
 		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		ArrayList<Double> PQLossLoad = null;
 
-		File file = new File("/Users/my_mac/git/com.yavuz.git.first/Project1/test.txt");
+		File file = new File("test.txt");
 		try {
 			Scanner scan = new Scanner(file);
 			for (int i = 0; i < xadmittances.length; i++) {
@@ -71,7 +71,8 @@ public class ModifiedNR2 {
 			ArrayList<Bus> buses = new ArrayList<Bus>();
 			// PV Buses
 //			buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.0));
-			buses.add(new Bus(1, 0, theta.length * 2, -0.03525369 * treat, -0.06188417 * treat));
+//			buses.add(new Bus(1, 0, theta.length * 2, -0.03525369 * treat, -0.06188417 * treat));
+			buses.add(new Bus(1, 0,theta.length * 2, -0.0525369 , -0.02188417));
 			
 			// Droop Buses
 			buses.add(new Bus(2, 2, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)],0.9));
@@ -80,8 +81,8 @@ public class ModifiedNR2 {
 			// PQ Buses
 
 //			buses.add(new Bus(1, 8, theta.length * 2, -0.03525369*treat, -0.06188417*treat));
-			buses.add(new Bus(1, 8, theta.length * 2, -0.0 * treat, -0.0 * treat));  
-			buses.add(new Bus(1, 10, theta.length * 2, -0.04417614 * treat, -0.08281924 * treat));
+			buses.add(new Bus(1, 8,  theta.length * 2, 0.0 , 0.0));  
+			buses.add(new Bus(1, 10,  theta.length * 2, -0.05417614, -0.01281924));
 
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -174,8 +175,8 @@ public class ModifiedNR2 {
 				System.out.printf("\n\nSolution found in: %d msec",(System.currentTimeMillis() - cur));
 				System.out.printf("\nSteady state reference voltage value: %.5f", buses.get(0).voltage.getValue());
 				System.out.printf("\nSteady state system frequency: %.5f", wi);
-				System.out.printf("\nmp_1: %.5f \t mp_2: %.5f \t mp_3: %.5f",buses.get(1).mp,buses.get(2).mp,buses.get(3).mp);
-				System.out.printf("\nnq_1: %.5f \t nq_2: %.5f \t nq_3 : %.5f\n",buses.get(1).nq,buses.get(2).nq,buses.get(3).nq);
+				System.out.printf("\nmp_1: %.4f \t mp_2: %.4f \t mp_3: %.4f",buses.get(1).mp,buses.get(2).mp,buses.get(3).mp);
+				System.out.printf("\nnq_1: %.4f \t nq_2: %.4f \t nq_3 : %.4f\n",buses.get(1).nq,buses.get(2).nq,buses.get(3).nq);
 				if(ModifiedNR.sumMatrix(fx0)<min_mismatch && Math.abs(1-buses.get(0).voltage.getValue()) < min_volDev) {
 					best_mp[0] = buses.get(1).mp;
 					best_mp[1] = buses.get(2).mp;

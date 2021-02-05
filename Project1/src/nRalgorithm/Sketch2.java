@@ -7,14 +7,23 @@ package nRalgorithm;
 public class Sketch2 {
 
 	public static void main(String[] args) {
-		Multiswarm multiswarm = new Multiswarm(5,15,new MicrogridFitnessFunction());
+		Multiswarm multiswarm = new Multiswarm(10,10,new MicrogridFitnessFunction2());
 
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 40; i++) {
 			multiswarm.mainLoop(i+1);
 		}
-		System.out.println("Best fitness found: " + multiswarm.getBestFitness() + "\n" +"At position: "+ "["
-				+ multiswarm.getBestPosition()[0] + "," + multiswarm.getBestPosition()[1] + "]");
-	
+		
+		
+		
+		System.out.println("Best fitness found: " + multiswarm.getBestFitness());
+		
+		for(int i=0; i < multiswarm.getBestPosition().length;i++) {
+			System.out.printf("%.8f, ",multiswarm.getBestPosition()[i]);
+			
+		}
+		System.out.println();
+		
+		
 	}
 
 }

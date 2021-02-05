@@ -5,11 +5,13 @@ import java.util.Random;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+
+
 public class Sketch3 {
 
 	public static void main(String[] args) {
-		int size = 10;
-		NormalDistribution n = new NormalDistribution(10,2);
+		int size = 5;
+     NormalDistribution n = new NormalDistribution(0.1,0.01);
 
 		
 		double a[][] = new double[size][size];
@@ -30,6 +32,13 @@ public class Sketch3 {
 			System.out.println();
 		}
 		
+		double [] arr = new double [10];
+		
+		
+		for(int i=0 ; i<arr.length;i++) {
+			arr[i]= -n.sample();
+			System.out.println(arr[i]);
+		}
 
 
 	}

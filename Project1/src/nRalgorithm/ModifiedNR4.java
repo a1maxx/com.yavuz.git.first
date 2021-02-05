@@ -16,15 +16,35 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-public class ModifiedNR3 {
+public class ModifiedNR4 {
 
-	public static void main(String[] args) {
+	public ArrayList<Bus> createBuses(double[] mp, double[] nq) {
+		int params = 12;
+	    NormalDistribution n2 = new NormalDistribution(0.001,0.0001);
+		ArrayList<Bus> buses = new ArrayList<Bus>();
+		buses.add(new Bus(1, 0, params, -0.0525369, -0.02188417));
 
-		double[][] xadmittances = new double[6][6];
-		double[][] theta = new double[6][6];
-		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
-		ArrayList<Double> PQLossLoad = null;
+		// Droop Bus 9.4E-4 0.0013
+		buses.add(new Bus(2, 2, params, 0, 0, mp[0], nq[0], 10e1));
+		buses.add(new Bus(2, 4, params, 0, 0, mp[1], nq[1], 10e1));
+		buses.add(new Bus(2, 6, params, 0, 0, mp[2], nq[2], 10e1));
 
+		// PQ Bus
+		buses.add(new Bus(1, 8, params, n2.sample(), 0.0));
+		buses.add(new Bus(1, 10, params, -0.04417614, -0.01281924));
+
+		return buses;
+	}
+
+	public double runMNR(ArrayList<Bus> buses) {
+		double wi = 1.0;
+		int params = buses.size() * 2;
+		int order = 2;
+		int N = buses.size();
+
+		double[][] xadmittances = new double[N][N];
+		double[][] theta = new double[N][N];
+		double[][] radmittances = new double[N][N];
 		File file = new File("test.txt");
 		try {
 			Scanner scan = new Scanner(file);
@@ -44,58 +64,44 @@ public class ModifiedNR3 {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		int params = 12;
 
-		ArrayList<Bus> buses = new ArrayList<Bus>();
-		// Reference Bus (PQ)
-		buses.add(new Bus(1, 0, params, -0.0525369, -0.02188417));
-		// Droop Buses
-		buses.add(new Bus(2, 2, theta.length * 2, 0, 0, .83216, .87445, 10e1));
-		buses.add(new Bus(2, 4, theta.length * 2, 0, 0, .63259, .20593, 10e1));
-		buses.add(new Bus(2, 6, theta.length * 2, 0, 0, .61869, .90717, 10e1));
+		double[][] Jacobian = null;
 
-		NormalDistribution n2 = new NormalDistribution(0.001, 0.0001);
-		// PQ Bus
-		buses.add(new Bus(1, 8, params, n2.sample(), 0.0));
-		buses.add(new Bus(1, 10, params, -0.05417614, -0.01281924));
-
-		setDroops(new double[] {0.26788123, 0.28394418, 0.32727810},
-				new double[] {  0.95462466, 0.95374639, 0.98286032 }, buses);
-
+		RealMatrix fx0 = null;
+		ArrayList<Double> PQLossLoad = null;
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
 		RealMatrix X1 = null;
-		int order = 2;
-		RealMatrix fx0 = null;
-		double[][] Jacobian = null;
-		double wi = 1.0;
+	
 
-		long cur = System.currentTimeMillis();
+		double tolerance = 0.1;
+		double sum = 0;
+		boolean flag2 = false;
+//		double [] pd = new double[] {-0.01,-0.015,-0.02,-0.02};
+//		double [] qd = new double []{-0.001,-0.0015,-0.002,-0.0002};
+		double [] pd = new double[10];
+		double [] qd = new double [10];
+	    NormalDistribution n = new NormalDistribution(0.01,0.001);
 
-		double[] pd = new double[48];
-		double[] qd = new double[48];
-		NormalDistribution n = new NormalDistribution(0.01, 0.001);
-
-		for (int i = 0; i < pd.length; i++) {
-			pd[i] = -n.sample();
-			qd[i] = pd[i] * 0.1;
+		for(int i=0 ; i<pd.length;i++) {
+			pd[i]= -n.sample();
+			qd[i]= pd[i]*0.1;
 		}
-
-		int p = 0;
-		for (int k = 0; k < pd.length / 2; k++) {
+		int p=0;
+		for (int k = 0; k < pd.length/2; k++) {
 			double prev_Mismatches = Double.MAX_VALUE;
 			RealMatrix prevX1 = new Array2DRowRealMatrix(12, 1);
 			RealMatrix prevfx0 = null;
 			boolean flag = true;
-			for (Bus b : buses) {
-				if (b.type == 1 && b.index != 8) {
-					b.nominal_p = pd[p];
-					b.nominal_q = qd[p];
+			for(Bus b:buses) {
+				if(b.type==1 && b.index!=8) {
+					b.nominal_p= pd[p];
+					b.nominal_q= qd[p];
 					p++;
 				}
 			}
-
-			innerloop: for (int i = 1; i <= 50 && flag; i++) {
+			
+			innerloop: for (int i = 1; i <= 5 && flag; i++) {
 				double w0 = 1.0;
 				double v0 = 1.01;
 
@@ -160,14 +166,13 @@ public class ModifiedNR3 {
 
 				}
 
-				if (prev_Mismatches <= ModifiedNR.sumMatrix(fx0)) {
-					System.out.println("Missed the local optimum. Exiting...");
-					System.out.printf("Rejected sum of mismatches: %.5f", ModifiedNR.sumMatrix(fx0));
+				if (prev_Mismatches + tolerance < ModifiedNR.sumMatrix(fx0)) {
+
 					X1 = prevX1;
 					flag = false;
 
 				} else if (ModifiedNR.sumMatrix(fx0) < 1E-5) {
-					System.out.println("Full convergence achieved. Exiting...");
+
 					flag = false;
 				} else {
 
@@ -183,60 +188,52 @@ public class ModifiedNR3 {
 					ModifiedNR.updateUnknowns(X1, buses, deltaVoltageOrders, indexes, params, order);
 				}
 
-//				System.out.printf("\nLatest sum of mismatches = %.5f \n\n", prev_Mismatches);
-//				for (int j = 0; j < X1.getRowDimension(); j++) {
-//					if (j < deltaVoltageOrders.get(0).size())
-//						System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j),
-//								X1.getEntry(j, 0) * 180 / Math.PI, i);
-//					else
-//						System.out.printf("\t%s = %7.6f \t iteration %d %n", "Row".concat("" + j), X1.getEntry(j, 0),
-//								i);
-//				}
-//				System.out.printf("%s%n", "------------------------------------------------");
-
 			}
+			for (int i = 0; i < 2; i++)
+				sum += Math.abs(PQLossLoad.get(i)) * 3;
 
-			if (!Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))) {
-				System.out.println("\nTotal Time Elapsed (in msec) : " + (System.currentTimeMillis() - cur));
-//				for (Bus b : buses) {
-//					System.out.printf(
-//							"\nBus index: %d \t Bus type: %s\n" + "Bus Voltage: %.4f\n" + "Bus Angle: %.4f\n"
-//									+ "Bus Active Power: %.4f\n" + "Bus Reactive Power: %.4f\n"
-//									+ "-------------------------------------------------",
-//									buses.indexOf(b), b.type == 0 ? "PV" : b.type == 1 ? "PQ" : "DROOP", b.voltage.getValue(),
-//											b.delta.getValue() * 180.0 / Math.PI, b.p, b.q);
-//					
-//				}
+			sum += findMax(buses) * 15;
 
-				for (Bus b : buses)
-					if (b.type == 2)
-						System.out.printf("\nDroop coefficients of bus %d  \t mp: %.5f nq: %.5f\n", buses.indexOf(b),
-								b.mp, b.nq);
+			sum += Math.abs(1.0 - X1.getEntry(X1.getRowDimension() - 2, 0)) * 5 + ModifiedNR.sumMatrix(fx0);
 
-				System.out.println("\nFinal Mismatches = " + prevfx0);
-				System.out.println("\nMismatch Summation: " + prev_Mismatches);
-				System.out.printf("\nPLoss: %.5f\tPLoad: %.5f\n" + "QLoss: %.5f\tQLoad: %.5f \n", -PQLossLoad.get(0),
-						PQLossLoad.get(2), -PQLossLoad.get(1), PQLossLoad.get(3));
-				System.out.printf("\nTotal Active Power Demand: %.5f\n" + "Total Reactive Power Demand: %.5f \n",
-						-PQLossLoad.get(0) + PQLossLoad.get(2), -PQLossLoad.get(1) + PQLossLoad.get(3));
-				System.out.printf("\nSteady state system frequency: %.5f\n", wi);
-				System.out.printf("Steady state reference voltage value: %.5f\n", buses.get(0).voltage.getValue());
-			}
+			for (Bus b : buses)
+				if (b.type == 2 && (b.mp < 0 || b.nq < 0 || b.nq>1 || b.mp>1))
+					flag2 = true;
 
 		}
 
+		if (flag2)
+			return 10000;
+		else
+			return sum;
+
 	}
 
-	static void setDroops(double[] mp, double[] nq, ArrayList<Bus> buses) {
-		int i = 0;
+	static double findMax(ArrayList<Bus> buses) {
+		double max = 0;
 		for (Bus b : buses) {
-			if (b.type == 2) {
-				b.mp = mp[i];
-				b.nq = nq[i];
-				i++;
-			}
+			max = max < Math.abs(1.0 - b.voltage.getValue()) ? Math.abs(1.0 - b.voltage.getValue()) : max;
 
 		}
-
+		return max;
 	}
+
+	static void updateDemand(ArrayList<Bus> buses) {
+		for (Bus b : buses) {
+			if (b.type == 1) {
+				double new_p = new NormalDistribution(0.1, 001).sample();
+				b.nominal_p = new_p;
+				b.p = new_p;
+				double new_q = new NormalDistribution(0.05, 001).sample();
+				b.nominal_q = new_q;
+				b.q = new_q;
+			}
+		}
+	}
+
+
+
+
+
+
 }

@@ -145,8 +145,8 @@ public class ModifiedNR {
 	public static void setActiveReactiveGen(ArrayList<Bus> buses, double wi, double w0, double v0) {
 		for (Bus b : buses) {
 			if (b.type == 2) {
-				b.p = Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),b.qMax);		
-				b.q = Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),b.qMax) ;
+				b.p = Math.max(Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),b.qMax),0);		
+				b.q = Math.max(Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),b.qMax),0) ;
 			}
 		}
 
@@ -933,4 +933,16 @@ public class ModifiedNR {
 		return sum;
 
 	}
+	
+	public void setDroops(ArrayList<Bus> buses) {
+		for(Bus b: buses) {
+			
+			
+		}
+		
+		
+	}
+	
+	
+	
 }

@@ -33,10 +33,12 @@ public class Swarm {
 	public Swarm(int numParticles) {
 		particles = new Particle[numParticles];
 		for (int i = 0; i < numParticles; i++) {
-			double[] initialParticlePosition = { random.nextDouble()*0.01,
-					random.nextDouble()*0.1};
-			double[] initialParticleSpeed = { random.nextDouble()*0.01,
-					random.nextDouble()*0.01};
+			double[] initialParticlePosition = { random.nextDouble() , random.nextDouble() ,
+					random.nextDouble() , random.nextDouble() , random.nextDouble() ,
+					random.nextDouble() };
+			double[] initialParticleSpeed = { random.nextDouble() , random.nextDouble() ,
+					random.nextDouble(), random.nextDouble() , random.nextDouble() ,
+					random.nextDouble() };
 			particles[i] = new Particle(initialParticlePosition, initialParticleSpeed);
 		}
 	}

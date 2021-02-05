@@ -1,6 +1,8 @@
 package nRalgorithm;
 
 public class Constants {
+	
+	
 	public static final double INERTIA_FACTOR = 0.729;
 
 	/**

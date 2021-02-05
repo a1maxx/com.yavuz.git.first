@@ -82,13 +82,16 @@ public class Multiswarm {
 				// actual position.
 				double[] position = particle.getPosition();
 				double[] speed = particle.getSpeed();
-
-				position[0] += speed[0];
-				position[1] += speed[1];
-
+				for(int m = 0; m <position.length; m++) {
+					position[m] += speed[m];
+				}
+	
 				// Updates the particle speed.
-				speed[0] = getNewParticleSpeedForIndex(particle, swarm, 0);
-				speed[1] = getNewParticleSpeedForIndex(particle, swarm, 1);
+				for(int m = 0; m <speed.length; m++) {
+					speed[m] = getNewParticleSpeedForIndex(particle, swarm, m);
+				}
+//				speed[0] = getNewParticleSpeedForIndex(particle, swarm, 0);
+//				speed[1] = getNewParticleSpeedForIndex(particle, swarm, 1);
 			}
 		}
 		
@@ -148,8 +151,13 @@ public class Multiswarm {
 	}
 	
 	public void printBestPosition() {
-		System.out.printf("[%.5f , %.5f]\n",this.bestPosition[0],this.bestPosition[1]);
-		System.out.printf("Fitness value: %.5f\n",this.getBestFitness());
+		System.out.print("[");
+		for(int i = 0; i<this.bestPosition.length;i++) {
+			System.out.printf("%.6f   ",this.bestPosition[i]);
+		}
+		System.out.print("]\n");
+//		System.out.printf("[%.5f , %.5f]\n",this.bestPosition[0],this.bestPosition[1]);
+		System.out.printf("Fitness value: %.7f\n",this.getBestFitness());
 	
 	}
 
