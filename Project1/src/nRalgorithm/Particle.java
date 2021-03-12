@@ -3,10 +3,19 @@ package nRalgorithm;
 import java.util.Arrays;
 
 public class Particle {
+	
+	
+	public Solution2 sol;
+
+	
+	
 	/**
 	 * The current position of this particle.
 	 */
+
 	private double[] position;
+	
+	private int rep;
 
 	/**
 	 * The speed of this particle.
@@ -17,6 +26,7 @@ public class Particle {
 	 * The fitness of this particle for the current position.
 	 */
 	private double fitness;
+	
 
 	/**
 	 * The best position found by this particle.
@@ -32,6 +42,7 @@ public class Particle {
 	public Particle(double[] initialPosition, double[] initialSpeed) {
 		this.position = initialPosition;
 		this.speed = initialSpeed;
+		rep = 10;
 	}
 
 
@@ -73,7 +84,11 @@ public class Particle {
 	public void setFitness(double fitness) {
 		this.fitness = fitness;
 	}
-
+	
+	public void setSol(double [] fitness){
+		
+		
+	}
 
 	public void setBestPosition(double[] bestPosition) {
 		this.bestPosition = bestPosition;
@@ -127,5 +142,15 @@ public class Particle {
 	public String toString() {
 		return "Particle [position=" + Arrays.toString(position) + ", speed=" + Arrays.toString(speed) + ", fitness="
 				+ fitness + ", bestPosition=" + Arrays.toString(bestPosition) + ", bestFitness=" + bestFitness + "]";
+	}
+
+
+	public int getRep() {
+		return rep;
+	}
+
+
+	public void setRep(int rep) {
+		this.rep = rep;
 	}
 }

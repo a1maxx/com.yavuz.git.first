@@ -117,7 +117,7 @@ public class MicrogridFitnessFunction implements FitnessFunction{
 
 			buses.get(0).voltage = new DerivativeStructure(params, order, 1, X1.getEntry(X1.getRowDimension()-1, 0));
 			
-			ModifiedNR.updateUnknowns(X1, buses, deltaVoltageOrders, indexes, params, order);
+			ModifiedNR.updateUnknowns(X1, buses, deltaVoltageOrders, params, order);
 		
 
 
@@ -134,6 +134,17 @@ public class MicrogridFitnessFunction implements FitnessFunction{
 		sum += 4*Math.abs(1-X1.getEntry(X1.getRowDimension()-2, 0));
 		
 		return Math.abs(sum+loss);
+	}
+
+	public double[] getFitness(double[] particlePosition, int rep) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public double getFitness(Particle p, int rep) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

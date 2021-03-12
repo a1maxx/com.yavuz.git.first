@@ -25,9 +25,9 @@ public class ModifiedNR4 {
 		buses.add(new Bus(1, 0, params, -0.0525369, -0.02188417));
 
 		// Droop Bus 9.4E-4 0.0013
-		buses.add(new Bus(2, 2, params, 0, 0, mp[0], nq[0], 10e1));
-		buses.add(new Bus(2, 4, params, 0, 0, mp[1], nq[1], 10e1));
-		buses.add(new Bus(2, 6, params, 0, 0, mp[2], nq[2], 10e1));
+		buses.add(new Bus(2, 2, params, 0, 0, mp[0], nq[0], 1.2));
+		buses.add(new Bus(2, 4, params, 0, 0, mp[1], nq[1], 1.0));
+		buses.add(new Bus(2, 6, params, 0, 0, mp[2], nq[2], 1.4));
 
 		// PQ Bus
 		buses.add(new Bus(1, 8, params, n2.sample(), 0.0));
@@ -45,7 +45,9 @@ public class ModifiedNR4 {
 		double[][] xadmittances = new double[N][N];
 		double[][] theta = new double[N][N];
 		double[][] radmittances = new double[N][N];
-		File file = new File("test.txt");
+		
+		File file = new File("test2.txt");
+		
 		try {
 			Scanner scan = new Scanner(file);
 			for (int i = 0; i < xadmittances.length; i++) {
@@ -66,23 +68,31 @@ public class ModifiedNR4 {
 		}
 
 		double[][] Jacobian = null;
-
+		
 		RealMatrix fx0 = null;
 		ArrayList<Double> PQLossLoad = null;
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
 		RealMatrix X1 = null;
 	
-
+		double maxv = 0.0;
 		double tolerance = 0.1;
 		double sum = 0;
 		boolean flag2 = false;
-//		double [] pd = new double[] {-0.01,-0.015,-0.02,-0.02};
-//		double [] qd = new double []{-0.001,-0.0015,-0.002,-0.0002};
-		double [] pd = new double[10];
-		double [] qd = new double [10];
-	    NormalDistribution n = new NormalDistribution(0.01,0.001);
-
+		double [] pd = new double[21];
+		double [] qd = new double [21];
+		double [] miss = new double [pd.length];
+// 	    NormalDistribution n = new NormalDistribution(0.02,0.001);
+		NormalDistribution n = new NormalDistribution(1.0,0.1);
+		double [] PF = new double[pd.length];
+		for (int f = 0; f < PF.length; f++) {
+			if (f < pd.length/3)
+				PF[f] = 0.4;
+			else if (f < 2*pd.length/3)
+				PF[f] = 0.6;
+			else if (f < pd.length)
+				PF[f] = 1.0;
+		}
 		for(int i=0 ; i<pd.length;i++) {
 			pd[i]= -n.sample();
 			qd[i]= pd[i]*0.1;
@@ -90,6 +100,7 @@ public class ModifiedNR4 {
 		int p=0;
 		for (int k = 0; k < pd.length/2; k++) {
 			double prev_Mismatches = Double.MAX_VALUE;
+			
 			RealMatrix prevX1 = new Array2DRowRealMatrix(12, 1);
 			RealMatrix prevfx0 = null;
 			boolean flag = true;
@@ -185,30 +196,44 @@ public class ModifiedNR4 {
 					buses.get(0).voltage = new DerivativeStructure(params, order, 1,
 							X1.getEntry(X1.getRowDimension() - 1, 0));
 
-					ModifiedNR.updateUnknowns(X1, buses, deltaVoltageOrders, indexes, params, order);
+					ModifiedNR.updateUnknowns(X1, buses, deltaVoltageOrders, params, order);
 				}
 
 			}
 			for (int i = 0; i < 2; i++)
-				sum += Math.abs(PQLossLoad.get(i)) * 3;
+				sum += Math.abs(PQLossLoad.get(i)) * 5;
 
-			sum += findMax(buses) * 15;
+			sum += findMax(buses) * 5;
 
-			sum += Math.abs(1.0 - X1.getEntry(X1.getRowDimension() - 2, 0)) * 5 + ModifiedNR.sumMatrix(fx0);
+			sum += Math.abs(1.0 - X1.getEntry(X1.getRowDimension() - 2, 0)) * 5 ;
+			
+			flag2=false;
+			for (Bus b : buses) {
+				if ((b.type == 2 && (b.mp < 0 || b.nq < 0 || b.nq > 1 || b.mp >= 1))) {
+					if (b.nq <= 0)
+						maxv = -(b.nq-1);
+					if (b.nq >= 1)
+						maxv = b.nq;
+					if (b.mp <= 0)
+						maxv = -(b.mp-1);
+					if (b.mp >= 1)
+						maxv = b.mp;
 
-			for (Bus b : buses)
-				if (b.type == 2 && (b.mp < 0 || b.nq < 0 || b.nq>1 || b.mp>1))
 					flag2 = true;
-
+				}
+			}
+			miss[k] = ModifiedNR.sumMatrix(fx0);
 		}
 
 		if (flag2)
-			return 10000;
+			return 10000*(maxv*10e5);
+		else if(findMax(miss)>10.0)
+			return ModifiedNR.sumMatrix(fx0)*10000;
 		else
-			return sum;
+			return sum/pd.length;
 
-	}
-
+	}	
+	
 	static double findMax(ArrayList<Bus> buses) {
 		double max = 0;
 		for (Bus b : buses) {
@@ -218,6 +243,17 @@ public class ModifiedNR4 {
 		return max;
 	}
 
+	
+	static double findMax(double [] arr) {
+		double max = 0;
+		for (Double b : arr) {
+			max = max <b?b:max;
+
+		}
+		return max;
+		
+	}
+	
 	static void updateDemand(ArrayList<Bus> buses) {
 		for (Bus b : buses) {
 			if (b.type == 1) {

@@ -13,6 +13,8 @@ public class Swarm {
 	 * The best position found within the particles of this swarm.
 	 */
 	private double[] bestPosition;
+	
+	public int budget = 10;
 
 	/**
 	 * The best fitness score found within the particles of this swarm.
@@ -33,12 +35,20 @@ public class Swarm {
 	public Swarm(int numParticles) {
 		particles = new Particle[numParticles];
 		for (int i = 0; i < numParticles; i++) {
-			double[] initialParticlePosition = { random.nextDouble() , random.nextDouble() ,
-					random.nextDouble() , random.nextDouble() , random.nextDouble() ,
-					random.nextDouble() };
-			double[] initialParticleSpeed = { random.nextDouble() , random.nextDouble() ,
-					random.nextDouble(), random.nextDouble() , random.nextDouble() ,
-					random.nextDouble() };
+			
+//			double[] initialParticlePosition = { 0.13+random.nextDouble()*0.01 , 0.13+random.nextDouble()*0.01 ,
+//					0.13+random.nextDouble()*0.01 , 0.97+random.nextDouble()*0.01 ,  0.97+random.nextDouble()*0.01 ,
+//					 0.97+random.nextDouble()*0.01  };
+//			double[] initialParticleSpeed = { random.nextDouble()*0.01 , random.nextDouble()*0.01 ,
+//					random.nextDouble()*0.01, random.nextDouble()*0.01 , random.nextDouble()*0.01 ,
+//					random.nextDouble()*0.01 };
+			
+			double[] initialParticlePosition = { random.nextDouble()*0.01 , random.nextDouble()*0.01 ,
+					random.nextDouble()*0.01 , random.nextDouble()*0.01 ,  random.nextDouble()*0.01 ,
+					 0.97+random.nextDouble()*0.01  };
+			double[] initialParticleSpeed = { random.nextDouble()*0.01 , random.nextDouble()*0.01 ,
+					random.nextDouble()*0.01, random.nextDouble()*0.01 , random.nextDouble()*0.01 ,
+					random.nextDouble()*0.01 };
 			particles[i] = new Particle(initialParticlePosition, initialParticleSpeed);
 		}
 	}

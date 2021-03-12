@@ -7,9 +7,9 @@ package nRalgorithm;
 public class Sketch2 {
 
 	public static void main(String[] args) {
-		Multiswarm multiswarm = new Multiswarm(10,10,new MicrogridFitnessFunction2());
+		Multiswarm multiswarm = new Multiswarm(10,25 ,new MicrogridFitnessFunction2());
 
-		for (int i = 0; i < 40; i++) {
+		for (int i = 0; i < 200; i++) {
 			multiswarm.mainLoop(i+1);
 		}
 		

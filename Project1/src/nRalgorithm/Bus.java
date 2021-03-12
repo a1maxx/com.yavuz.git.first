@@ -1,6 +1,7 @@
 package nRalgorithm;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.complex.Complex;
@@ -17,8 +18,11 @@ public class Bus {
 	public DerivativeStructure delta;
 	public int index;
 	public int order = 2;
-	double initialValue_d = 0.0;
-	double initialValue_v = 0.9729;
+	Random random = new Random();
+//	public double initialValue_d = random.nextDouble();
+//	public double initialValue_v = random.nextDouble()*2;
+	public double initialValue_d = 0.0;
+	public double initialValue_v = 1.7;
 	boolean slack = false;
 	Complex cVolt;
 	double mp;
@@ -239,9 +243,9 @@ public class Bus {
 	Bus(int type,int index,int params, double P, double Q) {
 		this.type = type;
 		this.index = index;
-		this.p = P;
 		this.nominal_p=P;
 		this.nominal_q=Q;
+		this.p = P;
 		this.q = Q;
 		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
 		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);

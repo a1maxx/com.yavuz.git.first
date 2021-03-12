@@ -1,16 +1,20 @@
 package nRalgorithm;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-public class Multiswarm {
+import org.apache.commons.math3.util.FastMath;
+
+public class Multiswarm2 {
 	private Swarm[] swarms;
 
 	/**
 	 * The best position found within all the {@link #swarms}.
 	 */
 	private double[] bestPosition;
-
+	
+	public int grand_budget;	
 
 	/**
 	 * The best fitness score found within all the {@link #swarms}.
@@ -37,7 +41,7 @@ public class Multiswarm {
 	 * @param fitnessFunction
 	 *            the {@link #fitnessFunction}
 	 */
-	public Multiswarm(int numSwarms, int particlesPerSwarm, FitnessFunction fitnessFunction) {
+	public Multiswarm2(int numSwarms, int particlesPerSwarm, FitnessFunction fitnessFunction) {
 		this.fitnessFunction = fitnessFunction;
 		this.swarms = new Swarm[numSwarms];
 		for (int i = 0; i < numSwarms; i++) {
@@ -57,10 +61,15 @@ public class Multiswarm {
 			for (Particle particle : swarm.getParticles()) {
 
 				double[] particleOldPosition = particle.getPosition().clone();
-
+				
+				
+				
 				// Calculate the particle fitness.
 				particle.setFitness(fitnessFunction.getFitness(particleOldPosition));
-
+				//particle.sol = new Solution(fitnessFunction.getFitness(particleOldPosition, particle.rep),particle.rep);
+				
+				
+				
 				// Check if a new best position has been found for the particle
 				// itself, within the swarm and the multiswarm.
 				if (particle.getFitness() <= particle.getBestFitness()) {
@@ -85,20 +94,87 @@ public class Multiswarm {
 				double[] speed = particle.getSpeed();
 				for(int m = 0; m <position.length; m++) {
 					position[m] += speed[m];
-					while(position[m]<=0 || position[m]>= 1)
-						position[m]= random.nextDouble();
 				}
 	
 				// Updates the particle speed.
 				for(int m = 0; m <speed.length; m++) {
 					speed[m] = getNewParticleSpeedForIndex(particle, swarm, m);
 				}
-//				speed[0] = getNewParticleSpeedForIndex(particle, swarm, 0);
-//				speed[1] = getNewParticleSpeedForIndex(particle, swarm, 1);
+
+			}
+		}
+		
+		
+		int N1 = 500 ;
+		int N2 = 500 / swarms.length;
+		
+		double grand_mean[] = new double [swarms.length];
+		double grand_sd[] = new double [swarms.length];
+		int k = 0;
+		
+		for (Swarm swarm : swarms) {
+
+			double sum = 0;
+			Particle [] particles = swarm.getParticles();
+			double [] sd = new double [particles.length] ;
+			
+			for (int l=0;i<particles.length;l++) {
+				sum+= particles[l].sol.mean;
+				sd[l] = particles[l].sol.sd;
+			
+				
+			}
+			grand_mean[k]= sum / swarm.getParticles().length;
+			grand_sd[k] = Solution.getSD(sd) / FastMath.sqrt(particles.length);
+			k++;
+		}
+		
+		double boss = Double.MAX_VALUE;
+		
+		for (int s =0 ; s < swarms.length;s++) {
+			if(grand_mean[s]<boss)
+				boss = grand_mean[s];
+		}
+		
+		double[] allocation_ratioS = new double[swarms.length];
+		int maxSind = Solution.findMinIndex(grand_mean);
+		for (int s = 0; s < swarms.length; s++) {
+			if (s != maxSind && s + 1 != maxSind) {
+				allocation_ratioS[s] = FastMath
+						.pow(grand_sd[s] * (boss - grand_mean[s + 1]) / grand_sd[s + 1] * (boss - grand_mean[s]), 2);
+				;
+			} else if (s + 1 == maxSind) {
+				allocation_ratioS[s] = FastMath
+						.pow(grand_sd[s] * (boss - grand_mean[s + 2]) / grand_sd[s + 2] * (boss - grand_mean[s]), 2);
+				;
+			}
+		}
+		
+		double [] rep_ratioS = new double[swarms.length];
+		rep_ratioS[0] = 1;
+		for (int s = 1; s < swarms.length; s++) {
+			if (s != maxSind && s + 1 != maxSind) {
+				rep_ratioS[s] = rep_ratioS[s-1]/allocation_ratioS[s-1];
+			} else if (s + 1 == maxSind) {
+				
 			}
 		}
 		
 
+		
+		
+		for (Swarm swarm : swarms) {
+			
+			double [] allocation_ratioP = new double[swarm.getParticles().length];
+			Particle [] particles = swarm.getParticles();
+			for (int l=0;l<particles.length;l++) {
+				allocation_ratioP[l] = FastMath.pow(particles[l].sol.sd*(swarm.getBestFitness()-particles[l+1].sol.mean) / particles[l+1].sol.sd*(swarm.getBestFitness()-particles[l].sol.mean),2);
+				
+			}
+			
+		}
+		
+		
 		
 		System.out.printf("Iteration %d has ended!%n",i);
 		this.printBestPosition();
@@ -134,10 +210,6 @@ public class Multiswarm {
 				+ (randomizePercentage(Constants.GLOBAL_WEIGHT)
 						* (bestPosition[index] - particle.getPosition()[index])));
 	}
-	
-
-	
-	
 
 	/**
 	 * Returns a random number between 0 and the value passed as argument.
@@ -203,7 +275,7 @@ public class Multiswarm {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Multiswarm other = (Multiswarm) obj;
+		Multiswarm2 other = (Multiswarm2) obj;
 		if (Double.doubleToLongBits(bestFitness) != Double.doubleToLongBits(other.bestFitness))
 			return false;
 		if (!Arrays.equals(bestPosition, other.bestPosition))

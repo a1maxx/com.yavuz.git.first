@@ -54,9 +54,9 @@ public class ModifiedNR2 {
  		double min_mismatch = Double.MAX_VALUE;
  		double min_volDev = Double.MAX_VALUE;
  		
- 		double eps = 1.0;
- 		int n_root = 5000;
- 		double treat=1.0;
+ 		double eps = 1e3;
+ 		int n_root = 2000;
+
 		
  		double[] mp = new double[n_root];
 		double[] nq = new double[n_root];
@@ -64,25 +64,24 @@ public class ModifiedNR2 {
 			mp[i] = random.nextDouble();
 		for (int i = 0; i < nq.length; i++)
 			nq[i] = random.nextDouble();
-//		outerloop:
+
 		for (int m = 0; m < mp.length; m++) {
 			
 			RealMatrix X1 = null;
 			ArrayList<Bus> buses = new ArrayList<Bus>();
 			// PV Buses
-//			buses.add(new Bus(0, 0, theta.length * 2, 0, 0, 1.0));
-//			buses.add(new Bus(1, 0, theta.length * 2, -0.03525369 * treat, -0.06188417 * treat));
-			buses.add(new Bus(1, 0,theta.length * 2, -0.0525369 , -0.02188417));
+
+			buses.add(new Bus(1, 0,theta.length * 2, -0.525369 , -0.2188417));
 			
 			// Droop Buses
-			buses.add(new Bus(2, 2, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)],0.9));
-			buses.add(new Bus(2, 4, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)],0.9));
-			buses.add(new Bus(2, 6, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)],0.9));
+			buses.add(new Bus(2, 2, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)],1.5e2));
+			buses.add(new Bus(2, 4, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)],1.0e2));
+			buses.add(new Bus(2, 6, theta.length * 2, 0, 0, mp[random.nextInt(mp.length)], nq[random.nextInt(nq.length)],3.0e2));
 			// PQ Buses
 
-//			buses.add(new Bus(1, 8, theta.length * 2, -0.03525369*treat, -0.06188417*treat));
+
 			buses.add(new Bus(1, 8,  theta.length * 2, 0.0 , 0.0));  
-			buses.add(new Bus(1, 10,  theta.length * 2, -0.05417614, -0.01281924));
+			buses.add(new Bus(1, 10,  theta.length * 2, -0.5417614, -0.1281924));
 
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -94,9 +93,9 @@ public class ModifiedNR2 {
 			double wi = 1;
 			long cur = System.currentTimeMillis();
 			innerloop:
-			for (int i = 1; i <= 8; i++) {
-				double w0 = 1.0;
-				double v0 = 1.01;
+			for (int i = 1; i <= 10; i++) {
+				double w0 = 1.0011;
+				double v0 = 1.05;
 
 				Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix2(radmittances, xadmittances, wi);
 
@@ -125,7 +124,7 @@ public class ModifiedNR2 {
 
 						X1 = X0.subtract(MatrixUtils.inverse(JJ).multiply(fx0));
 						if (Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))
-								|| ModifiedNR.sumMatrix(fx0) >  eps) {
+								|| ModifiedNR.sumMatrix(fx0) > eps) {
 							System.out.printf("\nDIVERGED at iteration %d", m);
 							break innerloop;
 						}
@@ -165,7 +164,7 @@ public class ModifiedNR2 {
 				buses.get(0).voltage = new DerivativeStructure(params, order, 1,
 						X1.getEntry(X1.getRowDimension() - 1, 0));
 
-				ModifiedNR.updateUnknowns(X1, buses, deltaVoltageOrders, indexes, params, order);
+				ModifiedNR.updateUnknowns(X1, buses, deltaVoltageOrders, params, order);
 
 			}
 		
