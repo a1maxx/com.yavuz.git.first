@@ -43,9 +43,12 @@ public class Particle {
 		this.position = initialPosition;
 		this.speed = initialSpeed;
 		rep = 10;
+		this.sol= new Solution2();
 	}
 
-
+	public Particle() {
+		this.sol= new Solution2();
+	}
 	public double[] getPosition() {
 		return position;
 	}
@@ -140,7 +143,7 @@ public class Particle {
 
 	@Override
 	public String toString() {
-		return "Particle [position=" + Arrays.toString(position) + ", speed=" + Arrays.toString(speed) + ", fitness="
+		return "Particle [position=" + Arrays.toString(position) + ", speed=" + Arrays.toString(speed) + ", \nfitness="
 				+ fitness + ", bestPosition=" + Arrays.toString(bestPosition) + ", bestFitness=" + bestFitness + "]";
 	}
 

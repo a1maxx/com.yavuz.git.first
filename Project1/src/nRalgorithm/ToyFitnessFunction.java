@@ -36,4 +36,11 @@ public class ToyFitnessFunction implements FitnessFunction{
 		return 0;
 	}
 
+
+	@Override
+	public double[] getFitness(double[] particlePosition, int rep) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

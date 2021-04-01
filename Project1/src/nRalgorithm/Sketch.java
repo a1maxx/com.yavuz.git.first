@@ -99,7 +99,7 @@ public class Sketch {
 //				}
 //				System.out.println();
 //			}			
-			
+			scan.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

@@ -1,17 +1,29 @@
 package nRalgorithm;
 
-import java.util.ArrayList;
-import java.util.Random;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.distribution.NormalDistribution;
+import java.util.Random;
 
 public class Main2 {
 
 	public static void main(String[] args) {
 
-//		Random random = new Random();
-//		int nPar = 5;
+		Random random = new Random();
+		
+//		Test0 tst = new Test0();
+//		tst.printTo(null, null);
+//		
+//		WeibullDistribution wb= new WeibullDistribution(7.5,3.0);
+//		for(int i =0; i<100;i++)
+//			System.out.println(wb.sample());
+		
+//		
+//		BetaDistribution bt = new BetaDistribution(0.40,8.56);
+//		for(int i =0; i<100;i++)
+//			System.out.println(bt.sample());
+		
+
+		
+//		int nPar = 10;
 //		Particle particles[] = new Particle[nPar];
 //		for (int i = 0; i < nPar; i++) {
 //			particles[i] = new Particle(
@@ -22,13 +34,20 @@ public class Main2 {
 //			
 //		}
 //		ToyFitnessFunction tff = new ToyFitnessFunction();	
+//		for(Particle p: particles) {
+//			p.setFitness(tff.getFitness(p, p.getRep()));
+//			if(p.getFitness()< p.getBestFitness())
+//				p.setBestFitness(p.getFitness());
+//			
+//		}
+//		double currentBest = particles[ModifiedNR7.findBestInd(particles)].getFitness();
+//		
 //		for(Particle p: particles)
-//			tff.getFitness(p, p.getRep());
+//			p.setFitness(tff.getFitness(p, p.getRep()));
 //		
-//		ModifiedNR7.findRep(particles, 100);
+
+//		ModifiedNR7.findRep2(particles, 100,currentBest);
 //		
-		
-		
 		
 		
 //		DerivativeStructure d1 = new DerivativeStructure(2,2,0,10) ;

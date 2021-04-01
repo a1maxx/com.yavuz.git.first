@@ -119,13 +119,13 @@ public class Multiswarm2 {
 			double [] sd = new double [particles.length] ;
 			
 			for (int l=0;i<particles.length;l++) {
-				sum+= particles[l].sol.mean;
-				sd[l] = particles[l].sol.sd;
+				sum+= particles[l].sol.getMean();
+				sd[l] = particles[l].sol.getSD();
 			
 				
 			}
 			grand_mean[k]= sum / swarm.getParticles().length;
-			grand_sd[k] = Solution.getSD(sd) / FastMath.sqrt(particles.length);
+//			grand_sd[k] = Solution.getSD() / FastMath.sqrt(particles.length);
 			k++;
 		}
 		

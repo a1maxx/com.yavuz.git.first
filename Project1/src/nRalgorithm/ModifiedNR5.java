@@ -23,12 +23,14 @@ public class ModifiedNR5 {
 
 	public static void main(String[] args) {
 
-		double[][] xadmittances = new double[3][3];
-		double[][] theta = new double[3][3];
+		int nofB = 12;
+
+		double[][] xadmittances = new double[nofB][nofB];
+		double[][] theta = new double[nofB][nofB];
 		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		ArrayList<Double> PQLossLoad = null;
 
-		File file = new File("test4.txt");
+		File file = new File("test2.txt");
 		try {
 			Scanner scan = new Scanner(file);
 			for (int i = 0; i < xadmittances.length; i++) {
@@ -52,7 +54,7 @@ public class ModifiedNR5 {
 		RealMatrix fx0 = null;
 		boolean flag2 = true;
 		double wi = 1.0;
-		RealMatrix prevX1 = new Array2DRowRealMatrix(6, 1);
+		RealMatrix prevX1 = new Array2DRowRealMatrix(24, 1);
 		RealMatrix prevfx0 = null;
 		double prev_Mismatches = Double.MAX_VALUE;
 		Random random = new Random();
@@ -62,23 +64,37 @@ public class ModifiedNR5 {
 		double[][] Jacobian = null;
 
 		while (flag2) {
-			int params = 6;
+			int params = 24;
 			int order = 2;
+
 			X1 = null;
 			fx0 = null;
-			wi = 1.0;
+			wi = 1.000;
 			prevfx0 = null;
-			prevX1 = new Array2DRowRealMatrix(6, 1);
+			prevX1 = new Array2DRowRealMatrix(params, 1);
 			prev_Mismatches = Double.MAX_VALUE;
 			flag = true;
 
 			Jacobian = null;
+			double PF = 0.628;
 
 			buses = new ArrayList<Bus>();
-			buses.add(new Bus(1, 0, 6, -0.2, -0.01));
-			buses.add(new Bus(2, 2, 6, 0, 0, random.nextDouble(), random.nextDouble(), 3.0));
-			buses.add(new Bus(2, 4, 6, 0, 0, random.nextDouble(), random.nextDouble(), 1.2));
-
+			buses.add(new Bus(1, 0, params, -0.1, -0.1 * PF));
+			buses.get(0).delta = new DerivativeStructure(params, 2, 0, 0.0);
+			buses.add(new Bus(2, 2, params, 0, 0, random.nextDouble(), random.nextDouble(), 3.0));
+			buses.add(new Bus(1, 4, params, -0.01, -0.01 * PF));
+			buses.add(new Bus(2, 6, params, 0, 0, random.nextDouble(), random.nextDouble(), 3.0));
+//			buses.add(new Bus(1, 6, params, -0.01, -0.01 * PF));
+			
+			buses.add(new Bus(1,8, params, -0.1, -0.1 * PF));
+			buses.add(new Bus(1, 10, params, -0.20, -0.20*PF));		
+			buses.add(new Bus(1, 12, params, -0.20, -0.20*PF));
+			buses.add(new Bus(1, 14, params, -0.1, -0.1*PF));
+			buses.add(new Bus(2, 16, params, 0, 0, random.nextDouble(), random.nextDouble(), 3.0));
+			buses.add(new Bus(1, 18, params, -0.1, -0.1*PF));
+			buses.add(new Bus(1, 20, params, -0.1, -0.1*PF));
+			buses.add(new Bus(2, 22, params, 0, 0, random.nextDouble(), random.nextDouble(), 3.0));
+			
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
 
@@ -88,11 +104,11 @@ public class ModifiedNR5 {
 
 				Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix2(radmittances, xadmittances, wi);
 
-				ModifiedNR.setActiveReactiveGen(buses, wi, w0, v0);
+				ModifiedNR.setActiveReactiveGen2(buses, wi, w0, v0);
 
 				PQLossLoad = ModifiedNR.calculatePQLossLoad(cAdmittances, buses, wi);
 
-				RealMatrix X0 = ModifiedNR.setUnknownValues(buses, deltaVoltageOrders, wi,
+				RealMatrix X0 = ModifiedNR.setUnknownValues2(buses, deltaVoltageOrders, wi,
 						buses.get(0).voltage.getValue());
 
 				RealMatrix mAdmittances = Admittance.createMadmittance(cAdmittances);
@@ -106,7 +122,7 @@ public class ModifiedNR5 {
 
 				fx0 = new Array2DRowRealMatrix(mismatches);
 
-				Jacobian = ModifiedNR.constructJacabian3(deltaVoltageOrders, pq, buses, wi, cAdmittances, indexes,
+				Jacobian = ModifiedNR.constructJacobian4(deltaVoltageOrders, pq, buses, wi, cAdmittances, indexes,
 						Admittance.createMadmittance(cAdmittances), Admittance.createTadmittance(cAdmittances),
 						radmittances, xadmittances);
 
@@ -115,7 +131,14 @@ public class ModifiedNR5 {
 				try {
 					try {
 
-						X1 = X0.subtract(MatrixUtils.inverse(JJ).multiply(fx0));
+//						X1 = X0.subtract(MatrixUtils.inverse(JJ).multiply(fx0));
+
+						RealMatrix DELTA = MatrixUtils.inverse(JJ).multiply(fx0).scalarMultiply(-1);
+						double[][] arJacob = ModifiedNR.artificialJacob2(deltaVoltageOrders, buses, wi, indexes,
+								radmittances, xadmittances, DELTA, X0);
+						RealMatrix aj = new Array2DRowRealMatrix(arJacob);
+						DELTA = MatrixUtils.inverse(aj).multiply(fx0).scalarMultiply(-1);
+						X1 = X0.add(DELTA);
 
 						if (Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))) {
 							System.out.printf("\nAlgorithm diverged, check the line data or the droop coefficients.");
@@ -151,20 +174,20 @@ public class ModifiedNR5 {
 					break innerloop;
 
 				}
-				if (ModifiedNR.sumMatrix(fx0) < 1E-6) {
+				if (ModifiedNR.sumMatrix(fx0) < 1E-5) {
 					boolean flag3 = true;
-					for (Bus b : buses) {
-						if (b.type == 2 && (b.p < 0 || b.q < 0)) {
-							flag3 = false;
-						}
-					}
+//					for (Bus b : buses) {
+//						if (b.type == 2 && (b.p < 0 || b.q < 0)) {
+//							flag3 = false;
+//						}
+//					}
 					if (flag3) {
 						System.out.println("\nFull convergence achieved. Exiting...");
 						flag = false;
 						flag2 = false;
 					}
 
-				} else if (prev_Mismatches + 10.00984 <= ModifiedNR.sumMatrix(fx0)) {
+				} else if (prev_Mismatches + 15 <= ModifiedNR.sumMatrix(fx0)) {
 
 					System.out.printf("\nMissed the local optimum. Exiting... \t At iteration : %d", i);
 					System.out.printf("\nRejected sum of mismatches: %.5f", ModifiedNR.sumMatrix(fx0));
@@ -216,7 +239,7 @@ public class ModifiedNR5 {
 					System.out.printf("\nDroop coefficients of bus %d  \t mp: %.5f nq: %.5f\n", buses.indexOf(b), b.mp,
 							b.nq);
 
-			//System.out.println("\nFinal Mismatches = " + prevfx0);
+			// System.out.println("\nFinal Mismatches = " + prevfx0);
 			System.out.println("\nMismatch Summation: " + prev_Mismatches);
 			System.out.printf("\nPLoss: %.5f\tPLoad: %.5f\n" + "QLoss: %.5f\tQLoad: %.5f \n", -PQLossLoad.get(0),
 					PQLossLoad.get(2), -PQLossLoad.get(1), PQLossLoad.get(3));
@@ -227,5 +250,9 @@ public class ModifiedNR5 {
 		}
 
 	}
+
+	
+
+	
 
 }

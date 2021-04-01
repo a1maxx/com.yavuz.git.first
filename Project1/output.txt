@@ -1,0 +1,82 @@
+Droop Coefficients mp and nq:	-0.13880	-0.13880	-0.13880	0.97200	0.97200	0.97200	
+Fitness Value 	 Frequency
+0.26989	0.99780
+
+Bus 0 voltage: 	0.94250 
+Bus 1 voltage: 	0.96876 
+Bus 2 voltage: 	0.94302 
+Bus 3 voltage: 	0.96021 
+Bus 4 voltage: 	0.97697 
+Bus 5 voltage: 	0.94647 
+0.23758	0.99783
+
+Bus 0 voltage: 	0.95158 
+Bus 1 voltage: 	0.97470 
+Bus 2 voltage: 	0.94574 
+Bus 3 voltage: 	0.96687 
+Bus 4 voltage: 	0.98174 
+Bus 5 voltage: 	0.94904 
+0.25467	0.99781
+
+Bus 0 voltage: 	0.94754 
+Bus 1 voltage: 	0.97182 
+Bus 2 voltage: 	0.94339 
+Bus 3 voltage: 	0.96390 
+Bus 4 voltage: 	0.97943 
+Bus 5 voltage: 	0.94682 
+0.27994	0.99774
+
+Bus 0 voltage: 	0.94874 
+Bus 1 voltage: 	0.97010 
+Bus 2 voltage: 	0.93122 
+Bus 3 voltage: 	0.96480 
+Bus 4 voltage: 	0.97806 
+Bus 5 voltage: 	0.93532 
+0.27877	0.99777
+
+Bus 0 voltage: 	0.94475 
+Bus 1 voltage: 	0.96879 
+Bus 2 voltage: 	0.93652 
+Bus 3 voltage: 	0.96187 
+Bus 4 voltage: 	0.97700 
+Bus 5 voltage: 	0.94033 
+0.29250	0.99776
+
+Bus 0 voltage: 	0.93992 
+Bus 1 voltage: 	0.96592 
+Bus 2 voltage: 	0.93653 
+Bus 3 voltage: 	0.95833 
+Bus 4 voltage: 	0.97470 
+Bus 5 voltage: 	0.94033 
+0.29620	0.99772
+
+Bus 0 voltage: 	0.94475 
+Bus 1 voltage: 	0.96731 
+Bus 2 voltage: 	0.92913 
+Bus 3 voltage: 	0.96187 
+Bus 4 voltage: 	0.97582 
+Bus 5 voltage: 	0.93335 
+0.28697	0.99778
+
+Bus 0 voltage: 	0.93721 
+Bus 1 voltage: 	0.96546 
+Bus 2 voltage: 	0.94220 
+Bus 3 voltage: 	0.95635 
+Bus 4 voltage: 	0.97432 
+Bus 5 voltage: 	0.94570 
+0.23607	0.99784
+
+Bus 0 voltage: 	0.95023 
+Bus 1 voltage: 	0.97435 
+Bus 2 voltage: 	0.94802 
+Bus 3 voltage: 	0.96588 
+Bus 4 voltage: 	0.98146 
+Bus 5 voltage: 	0.95120 
+0.26480	0.99776
+
+Bus 0 voltage: 	0.95184 
+Bus 1 voltage: 	0.97248 
+Bus 2 voltage: 	0.93391 
+Bus 3 voltage: 	0.96707 
+Bus 4 voltage: 	0.97996 
+Bus 5 voltage: 	0.93786 

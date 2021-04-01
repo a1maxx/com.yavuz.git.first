@@ -11,21 +11,8 @@ public class MicrogridFitnessFunction2 implements FitnessFunction {
 		double[] nq = new double[3];
 		Random random = new Random();
 		
-//		for(int i=0;i<mp.length;i++) {
-//			if(mp[i] <= 0 || mp[i]>=1) {
-//				mp[i] = random.nextDouble();
-//			}
-//			
-//		}
-//		for(int i=0;i<nq.length;i++) {
-//			if(nq[i] <= 0 || nq[i]>=1) {
-//				nq[i] = random.nextDouble();
-//			}
-//			
-//		}
 		System.arraycopy(particlePosition, 0, mp, 0, 3);
 		System.arraycopy(particlePosition, 3, nq, 0, 3);
-		
 		ModifiedNR4 nr4 = new ModifiedNR4();
 		ArrayList<Bus> buses = nr4.createBuses(mp, nq);
 
@@ -49,9 +36,11 @@ public class MicrogridFitnessFunction2 implements FitnessFunction {
 	}
 
 	@Override
-	public Solution2 getFitness(Particle p, int rep) {
+	public double getFitness(Particle p, int rep) {
 		// TODO Auto-generated method stub
-		return null;
+		return 0;
 	}
+
+
 
 }

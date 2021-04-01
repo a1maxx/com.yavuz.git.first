@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.distribution.WeibullDistribution;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.NullArgumentException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -19,8 +20,10 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 public class ModifiedNR6 {
 
 	public static void main(String[] args) {
-		double[][] xadmittances = new double[3][3];
-		double[][] theta = new double[3][3];
+		int nofB = 3;
+
+		double[][] xadmittances = new double[nofB][nofB];
+		double[][] theta = new double[nofB][nofB];
 		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		ArrayList<Double> PQLossLoad = null;
 
@@ -54,7 +57,7 @@ public class ModifiedNR6 {
 
 		boolean flag = true;
 		ArrayList<Bus> buses = new ArrayList<Bus>();
-		
+
 		double[][] Jacobian = null;
 		boolean flag2 = true;
 		int m = 0;
@@ -62,7 +65,7 @@ public class ModifiedNR6 {
 		ArrayList<Double> initialD = new ArrayList<Double>();
 		ArrayList<Double> initialV = new ArrayList<Double>();
 		long cur = System.currentTimeMillis();
-		while (u < 30 && !((System.currentTimeMillis()-cur)>1.5e4 && u<3) )  {
+		while (u < 30 && !((System.currentTimeMillis() - cur) > 1.5e4 && u < 3)) {
 
 			int params = 6;
 			int order = 2;
@@ -79,9 +82,12 @@ public class ModifiedNR6 {
 			buses.add(new Bus(1, 0, 6, -0.5, -0.2));
 			buses.get(0).delta = new DerivativeStructure(6, 2, 0, 0.0);
 
-			buses.add(new Bus(2, 2, 6, 0, 0, 0.05, 0.85, 3.0));
-			buses.add(new Bus(2, 4, 6, 0, 0, 0.09, 0.28, 1.5));
+//			buses.add(new Bus(2, 2, 6, 0, 0, 0.05, 0.85, 3.0));
+			buses.add(new Bus(2, 2, 6, 0, 0, 0.14709, 0.35614, 3.0));
+			buses.add(new Bus(1, 4, 6, 0.20, 0.01));
 
+		
+			
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
 
@@ -97,7 +103,7 @@ public class ModifiedNR6 {
 
 				PQLossLoad = ModifiedNR.calculatePQLossLoad(cAdmittances, buses, wi);
 
-				RealMatrix X0 = ModifiedNR.setUnknownValues(buses, deltaVoltageOrders, wi,
+				RealMatrix X0 = ModifiedNR.setUnknownValues2(buses, deltaVoltageOrders, wi,
 						buses.get(0).voltage.getValue());
 
 				RealMatrix mAdmittances = Admittance.createMadmittance(cAdmittances);
@@ -111,7 +117,7 @@ public class ModifiedNR6 {
 
 				fx0 = new Array2DRowRealMatrix(mismatches);
 
-				Jacobian = ModifiedNR.constructJacabian3(deltaVoltageOrders, pq, buses, wi, cAdmittances, indexes,
+				Jacobian = ModifiedNR.constructJacobian3(deltaVoltageOrders, pq, buses, wi, cAdmittances, indexes,
 						Admittance.createMadmittance(cAdmittances), Admittance.createTadmittance(cAdmittances),
 						radmittances, xadmittances);
 
@@ -178,7 +184,7 @@ public class ModifiedNR6 {
 
 					}
 
-				} else if (prev_Mismatches + 10.00984  <= ModifiedNR.sumMatrix(fx0)) {
+				} else if (prev_Mismatches + 10.00984 <= ModifiedNR.sumMatrix(fx0)) {
 //
 //					System.out.printf("\nMissed the local optimum. Exiting... \t At iteration : %d", i);
 //					System.out.printf("\nRejected sum of mismatches: %.5f", ModifiedNR.sumMatrix(fx0));
@@ -226,10 +232,10 @@ public class ModifiedNR6 {
 			}
 			System.out.println();
 		}
-		
-		System.out.println("\n"+"-".repeat(100));
+
+		System.out.println("\n" + "-".repeat(100));
 		f = 0;
-		
+
 		outerloop: for (int i = 0; i < initialV.size(); i++) {
 			for (int j = 0; j < 3; j++) {
 				System.out.printf("%.5f\t", initialV.get(f));

@@ -6,11 +6,13 @@ public class Solution2 {
 
 	public int rep;
 	public ArrayList<Double> fitness;
-
+	public double mean;
+	public double sd;
 	
 	public Solution2() {
 		this.rep=0;
 		this.fitness = new ArrayList<Double>();
+		
 	}
 	
 	public double getMean() {
@@ -18,8 +20,9 @@ public class Solution2 {
 		for (Double d : this.fitness) {
 			sum += d;
 		}
-
-		return sum / this.fitness.size();
+		
+		this.mean = sum / this.fitness.size();
+		return this.mean;
 
 	}
 
@@ -31,8 +34,9 @@ public class Solution2 {
 			sum += Math.pow(this.fitness.get(i) - mean, 2);
 		}
 
-		return Math.sqrt(sum / this.fitness.size() - 1);
+		this.sd = Math.sqrt(sum / (this.fitness.size() - 1));
 
+		return this.sd;
 	}
 
 	public static int findMaxIndex(ArrayList<Double> arr) {

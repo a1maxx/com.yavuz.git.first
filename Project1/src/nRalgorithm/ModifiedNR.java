@@ -2,6 +2,7 @@ package nRalgorithm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
@@ -50,14 +51,12 @@ public class ModifiedNR {
 
 	}
 
-	public static void setActiveReactiveGen2(ArrayList<Bus> buses, double wi, double[] w0, double[] v0) {
-		int d = 0;
+	public static void setActiveReactiveGen2(ArrayList<Bus> buses, double wi, double w0, double v0) {
+
 		for (Bus b : buses) {
 			if (b.type == 2) {
-				b.p = Math.min(0.5 * (((1 / b.mp) * (w0[d] - wi)) + ((1 / b.nq) * (v0[d] - b.voltage.getValue()))),
-						b.qMax);
-				b.q = Math.min(0.5 * (((1 / b.nq) * (v0[d] - b.voltage.getValue())) - ((1 / b.mp) * (w0[d] - wi))),
-						b.qMax);
+				b.p = Math.min((1 / b.mp) * (w0 - wi), 10e2);
+				b.q = Math.min((1 / b.nq) * (v0 - b.voltage.getValue()), 10e2);
 			}
 		}
 
@@ -91,12 +90,14 @@ public class ModifiedNR {
 		double QLoss = 0.0;
 		for (int k = 0; k < buses.size(); k++) {
 			for (int n = 0; n < buses.size(); n++) {
+			
 				Complex temp0 = buses.get(k).cVolt.conjugate().multiply(buses.get(n).cVolt);
 				Complex temp1 = temp0.add(buses.get(n).cVolt.conjugate().multiply(buses.get(k).cVolt));
 				Complex temp2 = cAdmittances[k][n].multiply(temp1);
 
 				PLoss = PLoss + temp2.getReal();
 				QLoss = QLoss + temp2.getImaginary();
+				
 			}
 		}
 
@@ -115,10 +116,12 @@ public class ModifiedNR {
 		pS.addAll(indexes.get(2));
 		pS.addAll(indexes.get(1));
 		pS.addAll(indexes.get(0));
+		Collections.sort(pS);
 
 		ArrayList<Integer> qS = new ArrayList<Integer>();
 		qS.addAll(indexes.get(2));
 		qS.addAll(indexes.get(1));
+		Collections.sort(qS);
 
 		double pSys = 0;
 		double qSys = 0;
@@ -448,7 +451,7 @@ public class ModifiedNR {
 
 	}
 
-	public static double[][] constructJacabian3(ArrayList<ArrayList<Integer[]>> deltaVoltageOrders,
+	public static double[][] constructJacobian3(ArrayList<ArrayList<Integer[]>> deltaVoltageOrders,
 			ArrayList<ArrayList<DerivativeStructure>> pq, ArrayList<Bus> buses, double w, Complex[][] cAdmittances,
 			ArrayList<ArrayList<Integer>> indexes, RealMatrix admittance, RealMatrix theta, double[][] radmittances,
 			double[][] xadmittances) {
@@ -487,17 +490,19 @@ public class ModifiedNR {
 			}
 		}
 
-		double j13[] = new double[nofP];
-		int j = 0;
 		ArrayList<Integer> pS = new ArrayList<Integer>();
 		pS.addAll(indexes.get(2));
 		pS.addAll(indexes.get(1));
 		pS.addAll(indexes.get(0));
+		Collections.sort(pS);
 
+		double j13[] = new double[nofP];
+		int j = 0;
 		for (int k : pS) {
 			double temp0 = 0;
 			for (int n = 0; n < buses.size(); n++) {
 				double temp1 = 0;
+
 				double admittanceX = k != n
 						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getImaginary()
 						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getImaginary();
@@ -507,7 +512,7 @@ public class ModifiedNR {
 
 				if (admittance.getEntry(k, n) != 0) {
 					temp1 = -(FastMath.pow(admittanceX, 2) / w)
-							/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3.0 / 2));
+							/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 1.5));
 					double temp2 = 0;
 					temp2 = -((admittanceX / (admittanceR * w)) / (1 + FastMath.pow(admittanceX / admittanceR, 2)));
 					temp0 = temp0
@@ -534,6 +539,7 @@ public class ModifiedNR {
 		ArrayList<Integer> qS = new ArrayList<Integer>();
 		qS.addAll(indexes.get(2));
 		qS.addAll(indexes.get(1));
+		Collections.sort(qS);
 
 		j = 0;
 		for (int k : qS) {
@@ -678,45 +684,266 @@ public class ModifiedNR {
 
 	}
 
+	public static double[][] constructJacobian4(ArrayList<ArrayList<Integer[]>> deltaVoltageOrders,
+			ArrayList<ArrayList<DerivativeStructure>> pq, ArrayList<Bus> buses, double w, Complex[][] cAdmittances,
+			ArrayList<ArrayList<Integer>> indexes, RealMatrix admittance, RealMatrix theta, double[][] radmittances,
+			double[][] xadmittances) {
+
+		int nofP = pq.get(0).size();
+		int nofQ = pq.get(1).size();
+		int nofD = deltaVoltageOrders.get(0).size();
+		int nofV = deltaVoltageOrders.get(1).size();
+
+		double[][] jacobian = new double[nofP + nofQ + 2][nofD + nofV + 2];
+
+		for (int i = 0; i < nofP; i++) {
+			for (int j = 0; j < nofD; j++) {
+				jacobian[i][j] = pq.get(0).get(i)
+						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(0).get(j)));
+			}
+		}
+
+		for (int i = 0; i < nofP; i++) {
+			for (int j = nofD; j < nofD + nofV; j++) {
+				jacobian[i][j] = pq.get(0).get(i)
+						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(1).get((j - nofD))));
+			}
+		}
+
+		for (int i = nofP; i < nofP + nofQ; i++) {
+			for (int j = 0; j < nofD; j++) {
+				jacobian[i][j] = pq.get(1).get(i - nofP)
+						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(0).get(j)));
+			}
+		}
+		for (int i = nofP; i < nofP + nofQ; i++) {
+			for (int j = nofD; j < nofD + nofV; j++) {
+				jacobian[i][j] = pq.get(1).get(i - nofP)
+						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(1).get(j - nofD)));
+			}
+		}
+
+		ArrayList<Integer> pS = new ArrayList<Integer>();
+		pS.addAll(indexes.get(2));
+		pS.addAll(indexes.get(1));
+		pS.addAll(indexes.get(0));
+		Collections.sort(pS);
+
+		double j13[] = new double[nofP];
+		int j = 0;
+		for (int k : pS) {
+			double temp0 = 0;
+			for (int n = 0; n < buses.size(); n++) {
+				double temp1 = 0;
+				double admittanceX = k != n
+						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getImaginary()
+						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getImaginary();
+				double admittanceR = k != n
+						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getReal()
+						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getReal();
+
+				if (admittance.getEntry(k, n) != 0) {
+					temp1 = -(FastMath.pow(admittanceX, 2) / w)
+							/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3.0 / 2));
+					double temp2 = 0;
+					temp2 = -((admittanceX / (admittanceR * w)) / (1 + FastMath.pow(admittanceX / admittanceR, 2)));
+					temp0 = temp0
+							+ temp1 * buses.get(n).voltage.getValue()
+									* FastMath.cos(buses.get(k).delta.getValue() - buses.get(n).delta.getValue()
+											- theta.getEntry(k, n))
+							+ temp2 * admittance.getEntry(k, n) * buses.get(n).voltage.getValue()
+									* FastMath.sin(buses.get(k).delta.getValue() - buses.get(n).delta.getValue()
+											- theta.getEntry(k, n));
+				}
+			}
+
+			j13[j] = temp0 * buses.get(k).voltage.getValue();
+			j++;
+
+		}
+
+		for (int i = 0; i < nofP; i++) {
+			jacobian[i][nofD + nofV] = j13[i];
+		}
+
+		double j23[] = new double[nofQ];
+
+		ArrayList<Integer> qS = new ArrayList<Integer>();
+		qS.addAll(indexes.get(2));
+		qS.addAll(indexes.get(1));
+		Collections.sort(qS);
+
+		j = 0;
+		for (int k : qS) {
+			double temp0 = 0;
+			for (int n = 0; n < buses.size(); n++) {
+				double temp1 = 0;
+
+				double admittanceX = k == n
+						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getImaginary()
+						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getImaginary();
+				double admittanceR = k == n
+						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getReal()
+						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getReal();
+
+				if (admittance.getEntry(k, n) != 0) {
+					temp1 = -(FastMath.pow(admittanceX, 2) / w)
+							/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3.0 / 2));
+					double temp2 = 0;
+					temp2 = -((admittanceX / (admittanceR * w)) / (1 + FastMath.pow(admittanceX / admittanceR, 2)));
+					temp0 = temp0
+							+ temp1 * buses.get(n).voltage.getValue()
+									* FastMath.sin(buses.get(k).delta.getValue() - buses.get(n).delta.getValue()
+											- theta.getEntry(k, n))
+							- temp2 * admittance.getEntry(k, n) * buses.get(n).voltage.getValue()
+									* FastMath.cos(buses.get(k).delta.getValue() - buses.get(n).delta.getValue()
+											- theta.getEntry(k, n));
+				}
+
+			}
+
+			j23[j] = temp0 * buses.get(k).voltage.getValue();
+			j++;
+
+		}
+
+		for (int i = nofP; i < nofP + nofQ; i++) {
+			jacobian[i][nofD + nofV] = j23[i - nofP];
+		}
+		double j33 = 0;
+		for (Bus b : buses) {
+			if (b.type == 2)
+				j33 += -1 / (b.mp);
+		}
+
+		jacobian[nofP + nofQ][nofD + nofV] = j33;
+
+		double j43 = 0;
+
+		jacobian[nofP + nofQ + 1][nofD + nofV] = j43;
+
+		double j14[] = new double[nofP];
+		j = 0;
+		for (int k : pS) {
+			j14[j] = buses.get(k).voltage.getValue() * admittance.getEntry(k, 0) * FastMath
+					.cos(buses.get(k).delta.getValue() - buses.get(0).delta.getValue() - theta.getEntry(k, 0));
+			j++;
+		}
+		for (int i = 0; i < nofP; i++) {
+			jacobian[i][nofD + nofV + 1] = j14[i];
+		}
+
+		double j24[] = new double[nofQ];
+		j = 0;
+
+		for (int k : qS) {
+
+			j24[j] = buses.get(k).voltage.getValue() * admittance.getEntry(k, 0) * FastMath
+					.sin(buses.get(k).delta.getValue() - buses.get(0).delta.getValue() - theta.getEntry(k, 0));
+			j++;
+		}
+		for (int i = nofP; i < nofP + nofQ; i++) {
+			jacobian[i][nofD + nofV + 1] = j24[i - nofP];
+		}
+
+		double j34 = 0;
+		jacobian[nofP + nofQ][nofD + nofV + 1] = j34;
+
+		double j44 = 0;
+		if (buses.get(0).type == 2)
+			j44 = -1 / (buses.get(0).nq);
+		else
+			j44 = 0;
+
+		jacobian[nofP + nofQ + 1][nofD + nofV + 1] = j44;
+
+		double j31 = 0;
+
+		for (int i = 0; i < nofD; i++) {
+			jacobian[nofP + nofQ][i] = j31;
+
+		}
+
+		double j41 = 0;
+
+		for (int i = 0; i < nofD; i++) {
+			jacobian[nofP + nofQ + 1][i] = j41;
+
+		}
+
+		double j32[] = new double[nofV];
+
+		for (int k = 0; k < qS.size(); k++)
+			j32[k] = 0;
+
+		for (int i = nofD; i < nofD + nofV; i++) {
+			jacobian[nofP + nofQ][i] = j32[i - nofD];
+
+		}
+
+		double j42[] = new double[nofV];
+		j = 0;
+		for (int k : qS) {
+			if (buses.get(k).type == 2) {
+				j42[j] = -1 / (buses.get(k).nq);
+				j++;
+			} else {
+				j42[j] = 0;
+				j++;
+			}
+
+		}
+
+		for (int i = nofD; i < nofD + nofV; i++) {
+			jacobian[nofP + nofQ + 1][i] = j42[i - nofD];
+
+		}
+
+		return jacobian;
+
+	}
+
 	public static double[][] artificialJacob(ArrayList<ArrayList<Integer[]>> deltaVoltageOrders, ArrayList<Bus> buses,
-			double w, ArrayList<ArrayList<Integer>> indexes, RealMatrix admittance,
-			RealMatrix theta, double[][] radmittances, double[][] xadmittances, RealMatrix DELTA, RealMatrix X0) {
-	
-		
+			double w, ArrayList<ArrayList<Integer>> indexes, double[][] radmittances, double[][] xadmittances,
+			RealMatrix DELTA, RealMatrix X0) {
+
+		Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix2(radmittances, xadmittances, w);
+		RealMatrix admittance = Admittance.createMadmittance(cAdmittances);
+		RealMatrix theta = Admittance.createTadmittance(cAdmittances);
+
 		double alpha = 0.0;
 		double beta = 0.0;
 		double kpf = 1.0;
 		double kqf = -1.0;
-		
+
 		double w0 = 1.00;
 		double v0 = 1.01;
-		
-		int params = buses.size()*2;
+
+		int params = buses.size() * 2;
 		int order = 2;
-		
+
 		RealMatrix X1 = X0.add(DELTA.scalarMultiply(0.5));
-		
+
 		@SuppressWarnings("unchecked")
-		ArrayList<Bus> buses2 =  (ArrayList<Bus>) buses.clone();
-		
+		ArrayList<Bus> buses2 = (ArrayList<Bus>) buses.clone();
+
 		ModifiedNR.updateUnknowns(X1, buses2, deltaVoltageOrders, params, order);
 		w = X1.getEntry(X1.getRowDimension() - 2, 0);
-		buses2.get(0).voltage = new DerivativeStructure(6, 2, 1, X1.getEntry(X1.getRowDimension() - 1, 0));
-		
-		Complex [][]  cAdmittances= Admittance.constructComplexAdmittanceMatrix(radmittances, xadmittances, w);
+		buses2.get(0).voltage = new DerivativeStructure(params, 2, 1, X1.getEntry(X1.getRowDimension() - 1, 0));
+
 		ModifiedNR.setActiveReactiveGen(buses2, w, w0, v0);
-		
 
 		for (int k = 0; k < buses2.size(); k++) {
 			if (buses2.get(k).type == 1) {
 				buses2.get(k).p = buses2.get(k).nominal_p * Math.pow(buses2.get(k).voltage.getValue() / v0, alpha)
 						* (1 + kpf * (w - w0));
-			
+
 				buses2.get(k).q = buses2.get(k).nominal_q * Math.pow(buses2.get(k).voltage.getValue() / v0, beta)
 						* (1 + kqf * (w - w0));
-			
+
 			}
 		}
+
 		ArrayList<ArrayList<DerivativeStructure>> pq = ModifiedNR.createEquations5(buses2, admittance, theta);
 
 		int nofP = pq.get(0).size();
@@ -753,12 +980,13 @@ public class ModifiedNR {
 		}
 
 		double j13[] = new double[nofP];
-		int j = 0;
 		ArrayList<Integer> pS = new ArrayList<Integer>();
 		pS.addAll(indexes.get(2));
 		pS.addAll(indexes.get(1));
 		pS.addAll(indexes.get(0));
+		Collections.sort(pS);
 
+		int j = 0;
 		for (int k : pS) {
 			double temp0 = 0;
 			for (int n = 0; n < buses2.size(); n++) {
@@ -770,6 +998,7 @@ public class ModifiedNR {
 						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getReal()
 						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getReal();
 
+//						&& admittanceR !=0 && admittanceX != 0
 				if (admittance.getEntry(k, n) != 0) {
 					temp1 = -(FastMath.pow(admittanceX, 2) / w)
 							/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3.0 / 2));
@@ -799,6 +1028,7 @@ public class ModifiedNR {
 		ArrayList<Integer> qS = new ArrayList<Integer>();
 		qS.addAll(indexes.get(2));
 		qS.addAll(indexes.get(1));
+		Collections.sort(qS);
 
 		j = 0;
 		for (int k : qS) {
@@ -812,7 +1042,7 @@ public class ModifiedNR {
 				double admittanceR = k == n
 						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getReal()
 						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getReal();
-
+//						
 				if (admittance.getEntry(k, n) != 0) {
 					temp1 = -(FastMath.pow(admittanceX, 2) / w)
 							/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3.0 / 2));
@@ -943,6 +1173,262 @@ public class ModifiedNR {
 
 	}
 
+	public static double[][] artificialJacob2(ArrayList<ArrayList<Integer[]>> deltaVoltageOrders, ArrayList<Bus> buses,
+			double w, ArrayList<ArrayList<Integer>> indexes, double[][] radmittances, double[][] xadmittances,
+			RealMatrix DELTA, RealMatrix X0) {
+
+		Complex[][] cAdmittances = Admittance.constructComplexAdmittanceMatrix2(radmittances, xadmittances, w);
+		RealMatrix admittance = Admittance.createMadmittance(cAdmittances);
+		RealMatrix theta = Admittance.createTadmittance(cAdmittances);
+
+		double alpha = 0.0;
+		double beta = 0.0;
+		double kpf = 1.0;
+		double kqf = -1.0;
+
+		double w0 = 1.00;
+		double v0 = 1.01;
+
+		int params = buses.size() * 2;
+		int order = 2;
+
+		RealMatrix X1 = X0.add(DELTA.scalarMultiply(0.5));
+
+		@SuppressWarnings("unchecked")
+		ArrayList<Bus> buses2 = (ArrayList<Bus>) buses.clone();
+
+		ModifiedNR.updateUnknowns(X1, buses2, deltaVoltageOrders, params, order);
+		w = X1.getEntry(X1.getRowDimension() - 2, 0);
+		buses2.get(0).voltage = new DerivativeStructure(params, 2, 1, X1.getEntry(X1.getRowDimension() - 1, 0));
+
+		ModifiedNR.setActiveReactiveGen2(buses2, w, w0, v0);
+
+		for (int k = 0; k < buses2.size(); k++) {
+			if (buses2.get(k).type == 1) {
+				buses2.get(k).p = buses2.get(k).nominal_p * Math.pow(buses2.get(k).voltage.getValue() / v0, alpha)
+						* (1 + kpf * (w - w0));
+
+				buses2.get(k).q = buses2.get(k).nominal_q * Math.pow(buses2.get(k).voltage.getValue() / v0, beta)
+						* (1 + kqf * (w - w0));
+
+			}
+		}
+
+		ArrayList<ArrayList<DerivativeStructure>> pq = ModifiedNR.createEquations5(buses2, admittance, theta);
+
+		int nofP = pq.get(0).size();
+		int nofQ = pq.get(1).size();
+		int nofD = deltaVoltageOrders.get(0).size();
+		int nofV = deltaVoltageOrders.get(1).size();
+		double[][] jacobian = new double[nofP + nofQ + 2][nofD + nofV + 2];
+
+		for (int i = 0; i < nofP; i++) {
+			for (int j = 0; j < nofD; j++) {
+				jacobian[i][j] = pq.get(0).get(i)
+						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(0).get(j)));
+			}
+		}
+
+		for (int i = 0; i < nofP; i++) {
+			for (int j = nofD; j < nofD + nofV; j++) {
+				jacobian[i][j] = pq.get(0).get(i)
+						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(1).get((j - nofD))));
+			}
+		}
+
+		for (int i = nofP; i < nofP + nofQ; i++) {
+			for (int j = 0; j < nofD; j++) {
+				jacobian[i][j] = pq.get(1).get(i - nofP)
+						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(0).get(j)));
+			}
+		}
+		for (int i = nofP; i < nofP + nofQ; i++) {
+			for (int j = nofD; j < nofD + nofV; j++) {
+				jacobian[i][j] = pq.get(1).get(i - nofP)
+						.getPartialDerivative(ArrayUtils.toPrimitive(deltaVoltageOrders.get(1).get(j - nofD)));
+			}
+		}
+
+		double j13[] = new double[nofP];
+		ArrayList<Integer> pS = new ArrayList<Integer>();
+		pS.addAll(indexes.get(2));
+		pS.addAll(indexes.get(1));
+		pS.addAll(indexes.get(0));
+		Collections.sort(pS);
+
+		int j = 0;
+		for (int k : pS) {
+			double temp0 = 0;
+			for (int n = 0; n < buses2.size(); n++) {
+				double temp1 = 0;
+				double admittanceX = k != n
+						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getImaginary()
+						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getImaginary();
+				double admittanceR = k != n
+						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getReal()
+						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getReal();
+
+				if (admittance.getEntry(k, n) != 0) {
+					temp1 = -(FastMath.pow(admittanceX, 2) / w)
+							/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3.0 / 2));
+					double temp2 = 0;
+					temp2 = -((admittanceX / (admittanceR * w)) / (1 + FastMath.pow(admittanceX / admittanceR, 2)));
+					temp0 = temp0
+							+ temp1 * buses2.get(n).voltage.getValue()
+									* FastMath.cos(buses2.get(k).delta.getValue() - buses2.get(n).delta.getValue()
+											- theta.getEntry(k, n))
+							+ temp2 * admittance.getEntry(k, n) * buses2.get(n).voltage.getValue()
+									* FastMath.sin(buses2.get(k).delta.getValue() - buses2.get(n).delta.getValue()
+											- theta.getEntry(k, n));
+				}
+			}
+
+			j13[j] = temp0 * buses2.get(k).voltage.getValue();
+			j++;
+
+		}
+
+		for (int i = 0; i < nofP; i++) {
+			jacobian[i][nofD + nofV] = j13[i];
+		}
+
+		double j23[] = new double[nofQ];
+
+		ArrayList<Integer> qS = new ArrayList<Integer>();
+		qS.addAll(indexes.get(2));
+		qS.addAll(indexes.get(1));
+		Collections.sort(qS);
+
+		j = 0;
+		for (int k : qS) {
+			double temp0 = 0;
+			for (int n = 0; n < buses2.size(); n++) {
+				double temp1 = 0;
+
+				double admittanceX = k == n
+						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getImaginary()
+						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getImaginary();
+				double admittanceR = k == n
+						? cAdmittances[k][n].pow(-1).isNaN() ? 0 : -cAdmittances[k][n].pow(-1).getReal()
+						: cAdmittances[k][n].pow(-1).isNaN() ? 0 : cAdmittances[k][n].pow(-1).getReal();
+//						
+				if (admittance.getEntry(k, n) != 0) {
+					temp1 = -(FastMath.pow(admittanceX, 2) / w)
+							/ (FastMath.pow((FastMath.pow(admittanceR, 2) + FastMath.pow(admittanceX, 2)), 3.0 / 2));
+					double temp2 = 0;
+					temp2 = -((admittanceX / (admittanceR * w)) / (1 + FastMath.pow(admittanceX / admittanceR, 2)));
+					temp0 = temp0
+							+ temp1 * buses2.get(n).voltage.getValue()
+									* FastMath.sin(buses2.get(k).delta.getValue() - buses2.get(n).delta.getValue()
+											- theta.getEntry(k, n))
+							- temp2 * admittance.getEntry(k, n) * buses2.get(n).voltage.getValue()
+									* FastMath.cos(buses2.get(k).delta.getValue() - buses2.get(n).delta.getValue()
+											- theta.getEntry(k, n));
+				}
+
+			}
+
+			j23[j] = temp0 * buses2.get(k).voltage.getValue();
+			j++;
+
+		}
+
+		for (int i = nofP; i < nofP + nofQ; i++) {
+			jacobian[i][nofD + nofV] = j23[i - nofP];
+		}
+
+		double j33 = 0;
+		for (Bus b : buses) {
+			if (b.type == 2)
+				j33 += -1 / (b.mp);
+		}
+
+		jacobian[nofP + nofQ][nofD + nofV] = j33;
+
+		double j43 = 0;
+
+		jacobian[nofP + nofQ + 1][nofD + nofV] = j43;
+
+		double j14[] = new double[nofP];
+		j = 0;
+		for (int k : pS) {
+			j14[j] = buses.get(k).voltage.getValue() * admittance.getEntry(k, 0) * FastMath
+					.cos(buses.get(k).delta.getValue() - buses.get(0).delta.getValue() - theta.getEntry(k, 0));
+			j++;
+		}
+		for (int i = 0; i < nofP; i++) {
+			jacobian[i][nofD + nofV + 1] = j14[i];
+		}
+
+		double j24[] = new double[nofQ];
+		j = 0;
+
+		for (int k : qS) {
+
+			j24[j] = buses.get(k).voltage.getValue() * admittance.getEntry(k, 0) * FastMath
+					.sin(buses.get(k).delta.getValue() - buses.get(0).delta.getValue() - theta.getEntry(k, 0));
+			j++;
+		}
+		for (int i = nofP; i < nofP + nofQ; i++) {
+			jacobian[i][nofD + nofV + 1] = j24[i - nofP];
+		}
+
+		double j34 = 0;
+		jacobian[nofP + nofQ][nofD + nofV + 1] = j34;
+
+		double j44 = 0;
+		if (buses.get(0).type == 2)
+			j44 = -1 / (buses.get(0).nq);
+		else
+			j44 = 0;
+
+		jacobian[nofP + nofQ + 1][nofD + nofV + 1] = j44;
+
+		double j31 = 0;
+
+		for (int i = 0; i < nofD; i++) {
+			jacobian[nofP + nofQ][i] = j31;
+
+		}
+
+		double j41 = 0;
+
+		for (int i = 0; i < nofD; i++) {
+			jacobian[nofP + nofQ + 1][i] = j41;
+
+		}
+
+		double j32[] = new double[nofV];
+
+		for (int k = 0; k < qS.size(); k++)
+			j32[k] = 0;
+
+		for (int i = nofD; i < nofD + nofV; i++) {
+			jacobian[nofP + nofQ][i] = j32[i - nofD];
+
+		}
+
+		double j42[] = new double[nofV];
+		j = 0;
+		for (int k : qS) {
+			if (buses.get(k).type == 2) {
+				j42[j] = -1 / (buses.get(k).nq);
+				j++;
+			} else {
+				j42[j] = 0;
+				j++;
+			}
+
+		}
+
+		for (int i = nofD; i < nofD + nofV; i++) {
+			jacobian[nofP + nofQ + 1][i] = j42[i - nofD];
+
+		}
+
+		return jacobian;
+	}
+
 	public static ArrayList<ArrayList<Integer[]>> createOrders2(ArrayList<Bus> buses) {
 
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = new ArrayList<>();
@@ -1056,16 +1542,21 @@ public class ModifiedNR {
 			DerivativeStructure equationP = new DerivativeStructure(buses.size() * 2, 2);
 			DerivativeStructure equationQ = new DerivativeStructure(buses.size() * 2, 2);
 			for (int i = 0; i < buses.size(); i++) {
-				if (buses.get(k).type != 0) {
-					equationP = equationP.add(buses.get(i).voltage.multiply(admittance.getEntry(k, i)).multiply(
-							(buses.get(k).delta.add(buses.get(i).delta.negate()).add(-theta.getEntry(k, i))).cos()));
+				if (admittance.getEntry(k, i) != 0) {
+					if (buses.get(k).type != 0) {
+						equationP = equationP.add(buses.get(i).voltage.multiply(admittance.getEntry(k, i)).multiply(
+								(buses.get(k).delta.add(buses.get(i).delta.negate()).add(-theta.getEntry(k, i)))
+										.cos()));
 
-					equationQ = equationQ.add(buses.get(i).voltage.multiply(admittance.getEntry(k, i)).multiply(
-							(buses.get(k).delta.add(buses.get(i).delta.negate()).add(-theta.getEntry(k, i))).sin()));
+						equationQ = equationQ.add(buses.get(i).voltage.multiply(admittance.getEntry(k, i)).multiply(
+								(buses.get(k).delta.add(buses.get(i).delta.negate()).add(-theta.getEntry(k, i)))
+										.sin()));
 
-				} else {
-					equationP = equationP.add(buses.get(i).voltage.multiply(admittance.getEntry(k, i)).multiply(
-							(buses.get(k).delta.add(-theta.getEntry(k, i)).add(buses.get(i).delta.negate())).cos()));
+					} else {
+						equationP = equationP.add(buses.get(i).voltage.multiply(admittance.getEntry(k, i)).multiply(
+								(buses.get(k).delta.add(-theta.getEntry(k, i)).add(buses.get(i).delta.negate()))
+										.cos()));
+					}
 				}
 			}
 			p.add(equationP.multiply(buses.get(k).voltage));
@@ -1099,6 +1590,41 @@ public class ModifiedNR {
 					voltages[j] = b.voltage.getValue();
 					j++;
 				} else if (b.type == 2) {
+					deltas[i] = b.delta.getValue();
+					i++;
+					voltages[j] = b.voltage.getValue();
+					j++;
+				} else {
+					System.out.println("ERROR!");
+				}
+			}
+
+		}
+
+		System.arraycopy(deltas, 0, unknowns, 0, nofD);
+		System.arraycopy(voltages, 0, unknowns, nofD, nofV);
+		unknowns[nofD + nofV] = w;
+		unknowns[nofD + nofV + 1] = v1;
+		RealMatrix X0 = new Array2DRowRealMatrix(unknowns);
+
+		return X0;
+	}
+
+	public static RealMatrix setUnknownValues2(ArrayList<Bus> buses, ArrayList<ArrayList<Integer[]>> deltaVoltageOrders,
+			double w, double v1) {
+		int nofD = deltaVoltageOrders.get(0).size();
+		int nofV = deltaVoltageOrders.get(1).size();
+		double[] deltas = new double[nofD];
+		double[] voltages = new double[nofV];
+		double[] unknowns = new double[nofD + nofV + 2];
+		int i = 0;
+		int j = 0;
+		for (Bus b : buses) {
+			if (b.index != 0) {
+				if (b.type == 0) {
+					deltas[i] = b.delta.getValue();
+					i++;
+				} else if (b.type == 1 || b.type == 2) {
 					deltas[i] = b.delta.getValue();
 					i++;
 					voltages[j] = b.voltage.getValue();

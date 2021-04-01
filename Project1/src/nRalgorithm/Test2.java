@@ -107,7 +107,7 @@ public class Test2 {
 
 			fx0 = new Array2DRowRealMatrix(mismatches);
 
-			Jacobian = ModifiedNR.constructJacabian3(deltaVoltageOrders, pq, buses, wi, cAdmittances, indexes,
+			Jacobian = ModifiedNR.constructJacobian3(deltaVoltageOrders, pq, buses, wi, cAdmittances, indexes,
 					Admittance.createMadmittance(cAdmittances), Admittance.createTadmittance(cAdmittances),
 					radmittances, xadmittances);
 

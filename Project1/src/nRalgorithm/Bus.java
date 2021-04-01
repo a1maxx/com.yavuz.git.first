@@ -21,8 +21,10 @@ public class Bus {
 	Random random = new Random();
 //	public double initialValue_d = random.nextDouble();
 //	public double initialValue_v = random.nextDouble()*2;
+//	public double initialValue_d = 0.45;
+//	public double initialValue_v = 1.04;
 	public double initialValue_d = 0.0;
-	public double initialValue_v = 1.7;
+	public double initialValue_v = 1.0;
 	boolean slack = false;
 	Complex cVolt;
 	double mp;
@@ -247,6 +249,19 @@ public class Bus {
 		this.nominal_q=Q;
 		this.p = P;
 		this.q = Q;
+		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
+		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
+		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
+
+	}
+	Bus(int type,int index,int params, double P) {
+		double PF= 1.128;
+		this.type = type;
+		this.index = index;
+		this.nominal_p=P;
+		this.nominal_q=P*PF;;
+		this.p = P;
+		this.q = P*PF;
 		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
 		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
 		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
