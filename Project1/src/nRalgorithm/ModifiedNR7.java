@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 public class ModifiedNR7 {
 	private static Random random = new Random();
@@ -91,6 +92,7 @@ public class ModifiedNR7 {
 
 				double[] position = particle.getPosition();
 				double[] speed = particle.getSpeed();
+				
 				for (int m = 0; m < position.length; m++) {
 					position[m] += speed[m];
 
@@ -371,16 +373,16 @@ public class ModifiedNR7 {
 
 	public static double G(Particle p, double best) {
 
-		double term1 = Math.pow(best - p.getFitness(), 2);
-		double term2 = Math.pow(p.sol.getSD(), 2);
+		double term1 = FastMath.pow(best - p.getFitness(), 2);
+		double term2 = FastMath.pow(p.sol.getSD(), 2);
 
 		return term1 / term2;
 	}
 
 	public static double I(Particle p) {
 		
-		 double term1 = Math.pow(p.getBestFitness() - p.getFitness(), 2);
-		 double term2 = 2 * Math.pow(p.sol.getSD(), 2);
+		 double term1 = FastMath.pow(p.getBestFitness() - p.getFitness(), 2);
+		 double term2 = 2 * FastMath.pow(p.sol.getSD(), 2);
 
 		return term1 / term2;
 	}

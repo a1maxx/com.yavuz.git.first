@@ -3,6 +3,8 @@ package nRalgorithm;
 
 import java.util.Random;
 
+import org.apache.commons.math3.distribution.WeibullDistribution;
+
 public class Main2 {
 
 	public static void main(String[] args) {
@@ -12,10 +14,22 @@ public class Main2 {
 //		Test0 tst = new Test0();
 //		tst.printTo(null, null);
 //		
-//		WeibullDistribution wb= new WeibullDistribution(7.5,3.0);
-//		for(int i =0; i<100;i++)
-//			System.out.println(wb.sample());
+		WeibullDistribution wb = new WeibullDistribution(7.5, 3.25);
+		double v = 0;
+		double generation = 0;
+		int count = 0;
+		for (int i = 0; i < 100; i++) {
+			v = wb.sample();
+//			System.out.println(v);
+			generation = ModifiedNR0.generateFromWind(v, 3.5, 20.0, 14.5, 0.75);
+			if (generation > 0) {
+				count++;
+				System.out.println(generation);
+			} 
+			
 		
+		}
+		System.out.println(count);
 //		
 //		BetaDistribution bt = new BetaDistribution(0.40,8.56);
 //		for(int i =0; i<100;i++)
@@ -67,5 +81,7 @@ public class Main2 {
 //		System.out.println(d3.getPartialDerivative(1,0));
 
 	}
+	
+
 
 }

@@ -255,7 +255,7 @@ public class Bus {
 
 	}
 	Bus(int type,int index,int params, double P) {
-		double PF= 1.128;
+		double PF = 0.328;
 		this.type = type;
 		this.index = index;
 		this.nominal_p=P;

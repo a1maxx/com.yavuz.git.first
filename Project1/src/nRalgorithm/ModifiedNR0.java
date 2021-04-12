@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.distribution.WeibullDistribution;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.NullArgumentException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -27,7 +28,7 @@ public class ModifiedNR0 {
 		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		ArrayList<Double> PQLossLoad = null;
 		ArrayList<ArrayList<DerivativeStructure>> pq= null;
-		File file = new File("test4.txt");
+		File file = new File("case6ww.txt");
 		try {
 			Scanner scan = new Scanner(file);
 			for (int i = 0; i < xadmittances.length; i++) {
@@ -69,22 +70,22 @@ public class ModifiedNR0 {
 		prevX1 = new Array2DRowRealMatrix(params, 1);
 		prev_Mismatches = Double.MAX_VALUE;
 		flag = true;
-
+		WeibullDistribution wb = new WeibullDistribution(7.5, 3.5);
 		Jacobian = null;
 		
 			flag = true;
 			buses = new ArrayList<Bus>();
-			buses.add(new Bus(1, 0, params, -0.04832, -0.07588042));
-			buses.add(new Bus(1, 2, params, -0.0, -0.0));
-			buses.add(new Bus(1, 4, params, -0.057376019, -0.093323308));
+			buses.add(new Bus(1, 0, params, -0.04832, -0.02588042));
+			buses.add(new Bus(1, 2, params,  generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
+			buses.add(new Bus(1, 4, params, -0.057376019, -0.073323308));
 //			buses.add(new Bus(2, 6, params, 0, 0, -0.014902, 0.613651, 3.0));
 //			buses.add(new Bus(2, 8, params, 0, 0, -0.019183, 0.641440, 3.0));
 //			buses.add(new Bus(2, 10, params, 0, 0, -0.007715, 0.550888, 3.0));
-			buses.add(new Bus(2, 6, params, 0, 0, -0.014902, 0.613651, 3.0));
-			buses.add(new Bus(2, 8, params, 0, 0, -0.019183, 0.641440, 3.0));
-			buses.add(new Bus(2, 10, params, 0, 0, -0.007715, 0.550888, 3.0));
-			ModifiedNR3.setDroops(new double[] {0.610640,	1.741969,	-1.643483},
-					new double[] {  0.904923,	1.968637,	2.187067}, buses);
+			buses.add(new Bus(2, 6, params, 0, 0, -0.014902, 0.613651, 1.2));
+			buses.add(new Bus(2, 8, params, 0, 0, -0.019183, 0.141440, 1.5));
+			buses.add(new Bus(2, 10, params, 0, 0, -0.007715, 0.750888, 3.0));
+//			ModifiedNR3.setDroops(new double[] {0.610640,	1.741969,	-1.643483},
+//					new double[] {  0.904923,	1.968637,	2.187067}, buses);
 			
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -148,7 +149,7 @@ public class ModifiedNR0 {
 					break innerloop;
 
 				}
-				if (ModifiedNR.sumMatrix(fx0) < 1E-8) {
+				if (ModifiedNR.sumMatrix(fx0) < 1E-10) {
 					boolean flag3 = true;
 				
 					if (flag3) {
@@ -216,6 +217,18 @@ public class ModifiedNR0 {
 					-PQLossLoad.get(0) + PQLossLoad.get(2), -PQLossLoad.get(1) + PQLossLoad.get(3));
 			System.out.printf("\nSteady state system frequency: %.5f\n", wi);
 			System.out.printf("Steady state reference voltage value: %.5f\n", buses.get(0).voltage.getValue());
+		}
+
+	}
+	public static double generateFromWind(double v, double vin, double vout, double vrated, double prated) {
+
+		if (v < vin || v > vout) {
+			return 0;
+		} else if (v >= vin && v <= vrated) {
+			return (prated * (v - vin)) / (vrated - vin);
+
+		} else {
+			return prated;
 		}
 
 	}
