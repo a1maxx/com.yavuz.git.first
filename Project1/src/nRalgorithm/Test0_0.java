@@ -19,7 +19,7 @@ import org.apache.commons.math3.linear.MatrixDimensionMismatchException;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
-public class Test0 {
+public class Test0_0 {
 
 	public static void main(String[] args) {
 		int rep = 100;
@@ -58,7 +58,7 @@ public class Test0 {
 		int cv = 0;
 		String method = "CONV_";
 //		double[] position = {0.374205,	0.778976,	0.007863,	0.875875,	0.343483,	0.049583}; // PSO1
-//		double[] position = {  0.090967,	0.620688,	0.123440,	0.432060,	0.164542,	0.45944}; // PSO2
+//		double[] position = {0.090967,	0.620688,	0.123440,	0.432060,	0.164542,	0.45944}; // PSO2
 //		double[] position = {0.212889,	0.012893,	0.145431,	0.590238,	0.377057,	0.064886}; // PSO3
 //		double[] position = {0.1388,0.1388,0.1388,	0.972,	0.972,	0.972}; // oOnventional
 		double[] position = {0.05551,0.05551,0.05551,0.05559,0.05559,0.05559};

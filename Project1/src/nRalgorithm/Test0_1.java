@@ -19,21 +19,17 @@ import org.apache.commons.math3.linear.MatrixDimensionMismatchException;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
-public class Test0 {
-
+public class Test0_1 {
 	public static void main(String[] args) {
-		int rep = 100;
-		
+		int rep = 1000;
 		double loadMean = 0.1;
 		
-		Test0 tst =  new Test0();
+		Test0_1 tst =  new Test0_1();
 		
-		ModifiedNR8 mnr8 = new ModifiedNR8();
-		double[][] xadmittances = mnr8.xadmittances;
-		double[][] radmittances = mnr8.radmittances;
+		ModifiedNR9 mnr9 = new ModifiedNR9();
+		double[][] xadmittances = mnr9.xadmittances;
+		double[][] radmittances = mnr9.radmittances;
 
-		WeibullDistribution wb = new WeibullDistribution(7.5, 3.5);
-		
 		ArrayList<Double> PQLossLoad = null;
 
 		RealMatrix X1 = null;
@@ -54,17 +50,16 @@ public class Test0 {
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 		double[][] Jacobian = null;
 
-		NormalDistribution normal = new NormalDistribution(loadMean, loadMean * 0.20);
+		NormalDistribution normal = new NormalDistribution(loadMean, 0.01);
 		int cv = 0;
-		String method = "CONV_";
-//		double[] position = {0.374205,	0.778976,	0.007863,	0.875875,	0.343483,	0.049583}; // PSO1
-//		double[] position = {  0.090967,	0.620688,	0.123440,	0.432060,	0.164542,	0.45944}; // PSO2
-//		double[] position = {0.212889,	0.012893,	0.145431,	0.590238,	0.377057,	0.064886}; // PSO3
-//		double[] position = {0.1388,0.1388,0.1388,	0.972,	0.972,	0.972}; // oOnventional
-		double[] position = {0.05551,0.05551,0.05551,0.05559,0.05559,0.05559};
+		
+//		double[] position = {1.014962,	-0.170710,	0.890531,	0.381016,	0.024265,	-0.019987,	2.274863,	1.684748,	1.394224,	0.702079,	0.183344,	0.289984};
+//		double[] position = { 0.610640,	1.741969,	-1.643483, 0.904923,	1.968637,	2.187067};
+//		double[] position = {0.1388,	0.1388,0.1388,0.1388,0.1388,0.1388,0.972,0.972,0.972,0.972,0.972,0.972};
+		double[] position = {0.233426,	0.778045,	0.717878,	1.337780,	1.952256,	0.000763,	1.476485,	0.008898,	0.740000,	1.760247,	1.688326,	2.666837};
 		
 		for (int k = 0; k < rep; k++) {
-			int params = 12;
+			int params = 24;
 			int order = 2;
 			
 			X1 = null;
@@ -75,14 +70,24 @@ public class Test0 {
 			flag = true;
 
 			Jacobian = null;
-	
+		
+
+			WeibullDistribution wb = new WeibullDistribution(7.5, 3.5);
+			WeibullDistribution wb2 = new WeibullDistribution(7.5, 3.5);
+
 			buses = new ArrayList<Bus>();
 			buses.add(new Bus(1, 0, params, -normal.sample()));
 			buses.add(new Bus(1, 2, params, ModifiedNR8.generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 			buses.add(new Bus(1, 4, params, -normal.sample()));
-			buses.add(new Bus(2, 6, params, 0, 0, position[0], position[3], 3.0));
-			buses.add(new Bus(2, 8, params, 0, 0, position[1], position[4], 3.0));
-			buses.add(new Bus(2, 10, params, 0, 0, position[2], position[5], 3.0));
+			buses.add(new Bus(2, 6, params, 0, 0, position[0], position[6], 3.0));
+			buses.add(new Bus(2, 8, params, 0, 0, position[1], position[7], 3.0));
+			buses.add(new Bus(2, 10, params, 0, 0, position[2], position[8], 3.0));
+			buses.add(new Bus(1, 12, params, -normal.sample()));
+			buses.add(new Bus(1, 14, params, ModifiedNR8.generateFromWind(wb2.sample(), 3.5, 20.0, 14.5, 0.75)));
+			buses.add(new Bus(1, 16, params, -normal.sample()));
+			buses.add(new Bus(2, 18, params, 0, 0, position[3], position[9], 3.0));
+			buses.add(new Bus(2, 20, params, 0, 0, position[4], position[10], 3.0));
+			buses.add(new Bus(2, 22, params, 0, 0, position[5], position[11], 3.0));
 
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -135,7 +140,7 @@ public class Test0 {
 					e.printStackTrace();
 				}
 
-				if (ModifiedNR.sumMatrix(fx0) < 1E-3) {
+				if (ModifiedNR.sumMatrix(fx0) < 1E-4) {
 
 					cv++;
 
@@ -182,18 +187,16 @@ public class Test0 {
 		}
 		
 
-
-		tst.printTo(fits, freqs, position,bV,method);
+		tst.printTo(fits, freqs, position,bV);
 		System.out.println(cv);
 
 	}
 
-	public void printTo(ArrayList<Double> fits, ArrayList<Double> freqs, double[] position,ArrayList<ArrayList<Double>> bV,String method) {
-
+	public void printTo(ArrayList<Double> fits, ArrayList<Double> freqs, double[] position,ArrayList<ArrayList<Double>> bV ) {
 		  String fileName = new SimpleDateFormat("yyyyMMddHHmmss'.txt'").format(new Date());
 		   try {
 		    	
-		    	  fileName = "zoutput_" + method + fileName  ;
+		    	  fileName = "zoutput_" + fileName ;
 		          File myObj = new File(fileName);
 		          if (myObj.createNewFile()) {
 		            System.out.println("File created: " + myObj.getName());
@@ -234,5 +237,6 @@ public class Test0 {
 			e.printStackTrace();
 		}
 	}
+
 
 }

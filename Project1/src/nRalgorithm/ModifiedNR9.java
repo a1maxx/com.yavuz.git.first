@@ -19,19 +19,20 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-public class ModifiedNR8 {
+public class ModifiedNR9 {
 	public static final double loadMean = 0.1;
-
+	public static final double loadSD = 0.01;
+	
 	double[][] xadmittances;
 	double[][] radmittances;
 	double[][] theta;
 	WeibullDistribution wb = new WeibullDistribution(7.5, 3.5);
-
-	public ModifiedNR8() {
-		int nofB = 6;
+	WeibullDistribution wb2 = new WeibullDistribution(7.5, 3.5);
+	public ModifiedNR9() {
+		int nofB = 12;
 		double[][] xadmittances = new double[nofB][nofB];
 		double[][] radmittances = new double[nofB][nofB];
-		File file = new File("case6ww.txt");
+		File file = new File("case12ww.txt");
 		try {
 			Scanner scan = new Scanner(file);
 			for (int i = 0; i < xadmittances.length; i++) {
@@ -53,13 +54,13 @@ public class ModifiedNR8 {
 		this.radmittances = radmittances;
 
 	}
-
+	
 	public static void main(String[] args) {
-		ModifiedNR8 mnr8 = new ModifiedNR8();
+		ModifiedNR9 mnr9 = new ModifiedNR9();
 
 		int npar = 5;
 
-		Particle[] particles = mnr8.initializeParticles(npar);
+		Particle[] particles = mnr9.initializeParticles(npar);
 
 		int iteration = 1;
 
@@ -73,36 +74,38 @@ public class ModifiedNR8 {
 		bestFitness = particles[ModifiedNR7.findBestInd(particles)].getFitness();
 		bestPosition = particles[ModifiedNR7.findBestInd(particles)].getPosition().clone();
 
-		particles = mnr8.initializeParticles(npar);
+		particles = mnr9.initializeParticles(npar);
 
 		for (iteration = 1; iteration < max_iter; iteration++) {
 
 			Particle best = new Particle();
 			best.setPosition(bestPosition);
 			best.setFitness(bestFitness);
-			mnr8.addSamples(best, n0);
+		
+			mnr9.addSamples(best, n0);
+			
 			bestFitness = best.getFitness();
 
 			boolean flag = false;
 			for (Particle particle : particles) {
 
 				for (Particle particle2 : particles) 
-					mnr8.experimentParticle(particle2, n0);
+					mnr9.experimentParticle(particle2, n0);
 
 //Case1
 				int budget = 50;
-				mnr8.makeAdditionalReps0(particles, budget);
+				mnr9.makeAdditionalReps0(particles, budget);
 
 //Case 2
 
 //				int budget = 50;
-//				mnr8.makeAdditionalReps2(particles, budget, bestFitness);
+//				mnr9.makeAdditionalReps2(particles, budget, bestFitness);
 
 //Case 3
 //
 //				int budget = 50;
 //				Res res = ModifiedNR7.findCase(particles, bestFitness);
-//				mnr8.makeAdditionalReps3(particles, budget, bestFitness, res, best);
+//				mnr9.makeAdditionalReps3(particles, budget, bestFitness, res, best);
 
 				bestFitness = best.getFitness();
 
@@ -147,8 +150,9 @@ public class ModifiedNR8 {
 			}
 		}
 
-	}
 
+	}
+	
 	public void makeAdditionalReps2(Particle[] particles, int budget, double bestFitness) {
 		int[] adReps = ModifiedNR7.findRep(particles, budget);
 
@@ -161,7 +165,7 @@ public class ModifiedNR8 {
 		RealMatrix fx0 = null;
 
 		double wi = 1.0;
-		RealMatrix prevX1 = new Array2DRowRealMatrix(12, 1);
+		RealMatrix prevX1 = new Array2DRowRealMatrix(24, 1);
 		RealMatrix prevfx0 = null;
 		double prev_Mismatches = Double.MAX_VALUE;
 
@@ -169,14 +173,14 @@ public class ModifiedNR8 {
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 		double[][] Jacobian = null;
 
-		NormalDistribution normal = new NormalDistribution(loadMean, loadMean * 0.20);
+		NormalDistribution normal = new NormalDistribution(loadMean, loadSD);
 
 		for (int f = 0; f < particles.length; f++) {
 			int rep = adReps[f];
 
 			if (rep > 0) {
 				for (int k = 0; k < rep; k++) {
-					int params = 12;
+					int params = 24;
 					int order = 2;
 
 					X1 = null;
@@ -194,11 +198,18 @@ public class ModifiedNR8 {
 					buses = new ArrayList<Bus>();
 					buses.add(new Bus(1, 0, params, -normal.sample()));
 					buses.add(new Bus(1, 2, params, generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
-					buses.add(new Bus(1, 8, params, -normal.sample()));
-					buses.add(new Bus(2, 4, params, 0, 0, position[0], position[3], 3.0));
-					buses.add(new Bus(2, 6, params, 0, 0, position[1], position[4], 3.0));
-					buses.add(new Bus(2, 10, params, 0, 0, position[2], position[5], 3.0));
-
+					buses.add(new Bus(1, 4, params, -normal.sample()));
+					buses.add(new Bus(2, 6, params, 0, 0, position[0], position[6], 3.0));
+					buses.add(new Bus(2, 8, params, 0, 0, position[1], position[7], 3.0));
+					buses.add(new Bus(2, 10, params, 0, 0, position[2], position[8], 3.0));
+					buses.add(new Bus(1, 12, params, -normal.sample()));
+					buses.add(new Bus(1, 14, params, generateFromWind(wb2.sample(), 3.5, 20.0, 14.5, 0.75)));
+					buses.add(new Bus(1, 16, params, -normal.sample()));
+					buses.add(new Bus(2, 18, params, 0, 0, position[3], position[9], 3.0));
+					buses.add(new Bus(2, 20, params, 0, 0, position[4], position[10], 3.0));
+					buses.add(new Bus(2, 22, params, 0, 0, position[5], position[11], 3.0));
+					
+					
 					ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 					ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
 
@@ -322,7 +333,7 @@ public class ModifiedNR8 {
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 		double[][] Jacobian = null;
 
-		NormalDistribution normal = new NormalDistribution(loadMean, loadMean * 0.20);
+		NormalDistribution normal = new NormalDistribution(loadMean,loadSD);
 
 		if (adReps[particles.length] > 0)
 			this.addSamples(best, adReps[particles.length]);
@@ -332,7 +343,7 @@ public class ModifiedNR8 {
 
 			if (rep > 0) {
 				for (int k = 0; k < rep; k++) {
-					int params = 12;
+					int params = 24;
 					int order = 2;
 
 					X1 = null;
@@ -350,10 +361,17 @@ public class ModifiedNR8 {
 					buses.add(new Bus(1, 0, params, -normal.sample()));
 					buses.add(new Bus(1, 2, params, generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 					buses.add(new Bus(1, 4, params, -normal.sample()));
-					buses.add(new Bus(2, 6, params, 0, 0, position[0], position[3], 3.0));
-					buses.add(new Bus(2, 8, params, 0, 0, position[1], position[4], 3.0));
-					buses.add(new Bus(2, 10, params, 0, 0, position[2], position[5], 3.0));
-
+					buses.add(new Bus(2, 6, params, 0, 0, position[0], position[6], 3.0));
+					buses.add(new Bus(2, 8, params, 0, 0, position[1], position[7], 3.0));
+					buses.add(new Bus(2, 10, params, 0, 0, position[2], position[8], 3.0));
+					buses.add(new Bus(1, 12, params, -normal.sample()));
+					buses.add(new Bus(1, 14, params, generateFromWind(wb2.sample(), 3.5, 20.0, 14.5, 0.75)));
+					buses.add(new Bus(1, 16, params, -normal.sample()));
+					buses.add(new Bus(2, 18, params, 0, 0, position[3], position[9], 3.0));
+					buses.add(new Bus(2, 20, params, 0, 0, position[4], position[10], 3.0));
+					buses.add(new Bus(2, 22, params, 0, 0, position[5], position[11], 3.0));
+					
+					
 					ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 					ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
 
@@ -462,7 +480,7 @@ public class ModifiedNR8 {
 			double[] initial5 = this.construct();
 			double[] speed = new double[initial5.length];
 			for (int j = 0; j < speed.length; j++) {
-				speed[j] = random.nextDouble();
+				speed[j] = (random.nextDouble()*4)-2;
 			}
 
 			particles[i] = new Particle(initial5, speed);
@@ -496,12 +514,12 @@ public class ModifiedNR8 {
 
 		double[][] Jacobian = null;
 
-		NormalDistribution normal = new NormalDistribution(loadMean, loadMean * 0.20);
+		NormalDistribution normal = new NormalDistribution(loadMean, loadSD);
 
 		p.sol.fitness = new ArrayList<Double>();
 
 		for (int k = 0; k < rep; k++) {
-			int params = 12;
+			int params = 24;
 			int order = 2;
 
 			X1 = null;
@@ -519,9 +537,15 @@ public class ModifiedNR8 {
 			buses.add(new Bus(1, 0, params, -normal.sample()));
 			buses.add(new Bus(1, 2, params, generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 			buses.add(new Bus(1, 4, params, -normal.sample()));
-			buses.add(new Bus(2, 6, params, 0, 0, position[0], position[3], 3.0));
-			buses.add(new Bus(2, 8, params, 0, 0, position[1], position[4], 3.0));
-			buses.add(new Bus(2, 10, params, 0, 0, position[2], position[5], 3.0));
+			buses.add(new Bus(2, 6, params, 0, 0, position[0], position[6], 3.0));
+			buses.add(new Bus(2, 8, params, 0, 0, position[1], position[7], 3.0));
+			buses.add(new Bus(2, 10, params, 0, 0, position[2], position[8], 3.0));
+			buses.add(new Bus(1, 12, params, -normal.sample()));
+			buses.add(new Bus(1, 14, params, generateFromWind(wb2.sample(), 3.5, 20.0, 14.5, 0.75)));
+			buses.add(new Bus(1, 16, params, -normal.sample()));
+			buses.add(new Bus(2, 18, params, 0, 0, position[3], position[9], 3.0));
+			buses.add(new Bus(2, 20, params, 0, 0, position[4], position[10], 3.0));
+			buses.add(new Bus(2, 22, params, 0, 0, position[5], position[11], 3.0));
 
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -623,7 +647,7 @@ public class ModifiedNR8 {
 
 		double[][] xadmittances = this.xadmittances;
 		double[][] radmittances = this.radmittances;
-		NormalDistribution normal = new NormalDistribution(loadMean, loadMean * 0.20);
+		NormalDistribution normal = new NormalDistribution(loadMean, loadSD);
 		ArrayList<Double> PQLossLoad = null;
 
 		RealMatrix X1 = null;
@@ -640,7 +664,7 @@ public class ModifiedNR8 {
 		double[][] Jacobian = null;
 		double[] initialPosition = null;
 		while (flag2) {
-			int params = 12;
+			int params = 24;
 			int order = 2;
 
 			X1 = null;
@@ -660,7 +684,14 @@ public class ModifiedNR8 {
 			buses.add(new Bus(2, 6, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
 			buses.add(new Bus(2, 8, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
 			buses.add(new Bus(2, 10, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
-
+			buses.add(new Bus(1, 12, params, -normal.sample()));
+			buses.add(new Bus(1, 14, params, generateFromWind(wb2.sample(), 3.5, 20.0, 14.5, 0.75)));
+			buses.add(new Bus(1, 16, params, -normal.sample()));
+			buses.add(new Bus(2, 18, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
+			buses.add(new Bus(2, 20, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
+			buses.add(new Bus(2, 22, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
+			
+			
 			int nofDroop = 0;
 			for (Bus b : buses) {
 				if (b.type == 2)
@@ -762,6 +793,8 @@ public class ModifiedNR8 {
 						if (b.type == 2)
 							initialPosition[y++] = b.nq;
 
+					
+					
 				} else if (prev_Mismatches + 0.5e2 <= ModifiedNR.sumMatrix(fx0)) {
 
 					System.out.printf("\nMissed the local optimum. Exiting... \t At iteration : %d", i);
@@ -811,14 +844,14 @@ public class ModifiedNR8 {
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 		double[][] Jacobian = null;
 
-		NormalDistribution normal = new NormalDistribution(loadMean, loadMean * 0.20);
+		NormalDistribution normal = new NormalDistribution(loadMean, loadSD);
 
 		for (int f = 0; f < particles.length; f++) {
 			int rep = adReps[f];
 
 			if (rep > 0) {
 				for (int k = 0; k < rep; k++) {
-					int params = 12;
+					int params = 24;
 					int order = 2;
 
 					X1 = null;
@@ -837,9 +870,15 @@ public class ModifiedNR8 {
 					buses.add(new Bus(1, 0, params, -normal.sample()));
 					buses.add(new Bus(1, 2, params, generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 					buses.add(new Bus(1, 4, params, -normal.sample()));
-					buses.add(new Bus(2, 6, params, 0, 0, position[0], position[3], 3.0));
-					buses.add(new Bus(2, 8, params, 0, 0, position[1], position[4], 3.0));
-					buses.add(new Bus(2, 10, params, 0, 0, position[2], position[5], 3.0));
+					buses.add(new Bus(2, 6, params, 0, 0, position[0], position[6], 3.0));
+					buses.add(new Bus(2, 8, params, 0, 0, position[1], position[7], 3.0));
+					buses.add(new Bus(2, 10, params, 0, 0, position[2], position[8], 3.0));
+					buses.add(new Bus(1, 12, params, -normal.sample()));
+					buses.add(new Bus(1, 14, params, generateFromWind(wb2.sample(), 3.5, 20.0, 14.5, 0.75)));
+					buses.add(new Bus(1, 16, params, -normal.sample()));
+					buses.add(new Bus(2, 18, params, 0, 0, position[3], position[9], 3.0));
+					buses.add(new Bus(2, 20, params, 0, 0, position[4], position[10], 3.0));
+					buses.add(new Bus(2, 22, params, 0, 0, position[5], position[11], 3.0));
 
 					ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 					ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -953,21 +992,22 @@ public class ModifiedNR8 {
 
 		RealMatrix X1 = null;
 		RealMatrix fx0 = null;
-
+		double []position = null; 
 		double wi = 1.0;
 		RealMatrix prevX1 = null;
 		RealMatrix prevfx0 = null;
 		double prev_Mismatches = Double.MAX_VALUE;
-		Random random = new Random();
+
 		boolean flag = true;
 		ArrayList<Bus> buses = new ArrayList<Bus>();
-		long cur = System.currentTimeMillis();
+		
 		double[][] Jacobian = null;
 
-		NormalDistribution normal = new NormalDistribution(loadMean, loadMean * 0.20);
+		NormalDistribution normal = new NormalDistribution(loadMean, loadSD);
 
+		
 		for (int k = 0; k < rep; k++) {
-			int params = 12;
+			int params = 24;
 			int order = 2;
 
 			X1 = null;
@@ -980,14 +1020,20 @@ public class ModifiedNR8 {
 
 			Jacobian = null;
 			
-			double[] position = p.getPosition();
+			position = p.getPosition();
 			buses = new ArrayList<Bus>();
 			buses.add(new Bus(1, 0, params, -normal.sample()));
 			buses.add(new Bus(1, 2, params, generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 			buses.add(new Bus(1, 4, params, -normal.sample()));
-			buses.add(new Bus(2, 6, params, 0, 0, position[0], position[3], 3.0));
-			buses.add(new Bus(2, 8, params, 0, 0, position[1], position[4], 3.0));
-			buses.add(new Bus(2, 10, params, 0, 0, position[2], position[5], 3.0));
+			buses.add(new Bus(2, 6, params, 0, 0, position[0], position[6], 3.0));
+			buses.add(new Bus(2, 8, params, 0, 0, position[1], position[7], 3.0));
+			buses.add(new Bus(2, 10, params, 0, 0, position[2], position[8], 3.0));
+			buses.add(new Bus(1, 12, params, -normal.sample()));
+			buses.add(new Bus(1, 14, params, generateFromWind(wb2.sample(), 3.5, 20.0, 14.5, 0.75)));
+			buses.add(new Bus(1, 16, params, -normal.sample()));
+			buses.add(new Bus(2, 18, params, 0, 0, position[3], position[9], 3.0));
+			buses.add(new Bus(2, 20, params, 0, 0, position[4], position[10], 3.0));
+			buses.add(new Bus(2, 22, params, 0, 0, position[5], position[11], 3.0));
 
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -1069,17 +1115,7 @@ public class ModifiedNR8 {
 
 			}
 
-			double fitness = Math.abs(PQLossLoad.get(0)) + Math.abs(PQLossLoad.get(1));
-			for (Bus b : buses) {
-				fitness = fitness + Math.abs(1 - b.voltage.getValue());
-
-			}
-
-			if (ModifiedNR.sumMatrix(fx0) > 1E-4)
-				fitness += ModifiedNR.sumMatrix(fx0);
-
-			fitness += (Math.abs(1 - wi) * 10) * buses.size();
-
+			double fitness = ModifiedNR.evaluate(buses, PQLossLoad, wi, position, fx0);
 			p.sol.fitness.add(fitness);
 
 		}
@@ -1100,5 +1136,6 @@ public class ModifiedNR8 {
 		}
 
 	}
+
 
 }

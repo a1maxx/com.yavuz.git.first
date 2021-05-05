@@ -17,18 +17,18 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-public class ModifiedNR0 {
+public class TrialCase {
 
 	public static void main(String[] args) {
 		
-		int nofB = 12;
+		int nofB = 30;
 		double[][] xadmittances = new double[nofB][nofB];
 		double[][] theta = new double[nofB][nofB];
 	
 		double[][] radmittances = new double[xadmittances.length][xadmittances[1].length];
 		ArrayList<Double> PQLossLoad = null;
 		ArrayList<ArrayList<DerivativeStructure>> pq= null;
-		File file = new File("case12ww.txt");
+		File file = new File("case30.txt");
 		try {
 			Scanner scan = new Scanner(file);
 			for (int i = 0; i < xadmittances.length; i++) {
@@ -61,7 +61,7 @@ public class ModifiedNR0 {
 		long cur = System.currentTimeMillis();
 		double[][] Jacobian = null;
 
-		int params = 24;
+		int params = 60;
 		int order = 2;
 		X1 = null;
 		fx0 = null;
@@ -75,26 +75,48 @@ public class ModifiedNR0 {
 		
 			flag = true;
 			buses = new ArrayList<Bus>();
-			buses.add(new Bus(1, 0, params, -0.14832, -0.02588042));
+			buses.add(new Bus(1, 0, params, -0.014832, -0.02588042));
 			buses.add(new Bus(1, 2, params,  generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 			buses.add(new Bus(1, 4, params, -0.097376019, -0.073323308));
-			buses.add(new Bus(2, 6, params, 0, 0, -0.114902, 0.613651, 1.2));
-			buses.add(new Bus(2, 8, params, 0, 0, -0.119183, 0.141440, 1.5));
-			buses.add(new Bus(2, 10, params, 0, 0, -0.107715, 0.750888, 3.0));
-			buses.add(new Bus(1, 12, params, -0.14832, -0.02588042));
+			buses.add(new Bus(2, 6, params, 0, 0, 0.0114902, 0.2613651, 3.0));
+			buses.add(new Bus(2, 8, params, 0, 0, 0.0119183, 0.2141440, 3.0));
+			buses.add(new Bus(2, 10, params, 0, 0, 0.0107715, 0.750888, 3.0));
+			buses.add(new Bus(1, 12, params, -0.014832, -0.02588042));
 			buses.add(new Bus(1, 14, params,  generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 			buses.add(new Bus(1, 16, params, -0.197376019, -0.073323308));
-			buses.add(new Bus(2, 18, params, 0, 0, -0.114902, 1.613651, 1.2));
-			buses.add(new Bus(2, 20, params, 0, 0, -0.119183, 1.141440, 1.5));
-			buses.add(new Bus(2, 22, params, 0, 0, -0.177156, 1.750888, 3.0));
+			buses.add(new Bus(2, 18, params, 0, 0, 0.114902, 0.613651, 1.2));
+			buses.add(new Bus(2, 20, params, 0, 0, 0.119183, 0.841440, 1.5));
+			buses.add(new Bus(2, 22, params, 0, 0, 0.177156, 0.250888, 3.0));
+			buses.add(new Bus(1, 24, params, -0.0197376019, -0.073323308));
+			buses.add(new Bus(1, 26, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 28, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 30, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 32, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 34, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 36, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 38, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 40, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 42, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 44, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(2, 46, params, 0, 0, 0.1388, 0.950888, 3.0));
+			buses.add(new Bus(1, 48, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 50, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 52, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(1, 54, params, -0.0197376019, -0.0073323308));
+			buses.add(new Bus(2, 56, params, 0, 0, 0.1388, 0.750888, 3.0));
+			buses.add(new Bus(1, 58, params, -0.0197376019, -0.0073323308));
+
+
+
+			
 			
 //			ModifiedNR3.setDroops(new double[] {-0.1388,	-0.1388,	-0.1388},
 //					new double[] {  0.972,	0.972,	0.972}, buses);
 			
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
-
-			innerloop: for (int i = 1; i <= 1000 && flag; i++) {
+	
+			innerloop: for (int i = 1; i <= 500 && flag; i++) {
 				double w0 = 1.00;
 				double v0 = 1.01;
 
@@ -153,7 +175,7 @@ public class ModifiedNR0 {
 					break innerloop;
 
 				}
-				if (ModifiedNR.sumMatrix(fx0) < 1E-10) {
+				if (ModifiedNR.sumMatrix(fx0) < 1E-6) {
 					boolean flag3 = true;
 				
 					if (flag3) {
@@ -162,7 +184,7 @@ public class ModifiedNR0 {
 						flag2 = false;
 					}
 
-				} else if (prev_Mismatches + 1e2 <= ModifiedNR.sumMatrix(fx0)) {
+				} else if (prev_Mismatches + 1e1 <= ModifiedNR.sumMatrix(fx0)) {
 
 					System.out.printf("\nMissed the local optimum. Exiting... \t At iteration : %d", i);
 					System.out.printf("\nRejected sum of mismatches: %.5f", ModifiedNR.sumMatrix(fx0));
@@ -228,5 +250,5 @@ public class ModifiedNR0 {
 		}
 
 	}
-
+	
 }

@@ -72,8 +72,9 @@ public class ModifiedNR0_1 {
 
 		buses = new ArrayList<Bus>();
 		buses.add(new Bus(1, 0, 6, -0.2, -0.1));
-		buses.add(new Bus(2, 2, 6, 0, 0, -0.01272, 0.6163, 3.0));
-		buses.add(new Bus(2, 4, 6, 0, 0, -0.01064, 0.5999, 1.2));
+		buses.add(new Bus(2, 2, 6, 0, 0, -1.01272, 0.6163, 3.0));
+		buses.add(new Bus(2, 4, 6, 0, 0, -1.01064, 0.5999, 1.2));
+		
 
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 		ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);

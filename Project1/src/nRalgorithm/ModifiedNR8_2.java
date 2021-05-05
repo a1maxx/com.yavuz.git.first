@@ -19,7 +19,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-public class ModifiedNR8 {
+public class ModifiedNR8_2 {
 	public static final double loadMean = 0.1;
 
 	double[][] xadmittances;
@@ -27,7 +27,7 @@ public class ModifiedNR8 {
 	double[][] theta;
 	WeibullDistribution wb = new WeibullDistribution(7.5, 3.5);
 
-	public ModifiedNR8() {
+	public ModifiedNR8_2() {
 		int nofB = 6;
 		double[][] xadmittances = new double[nofB][nofB];
 		double[][] radmittances = new double[nofB][nofB];
@@ -55,7 +55,7 @@ public class ModifiedNR8 {
 	}
 
 	public static void main(String[] args) {
-		ModifiedNR8 mnr8 = new ModifiedNR8();
+		ModifiedNR8_2 mnr8 = new ModifiedNR8_2();
 
 		int npar = 5;
 
@@ -64,12 +64,12 @@ public class ModifiedNR8 {
 		int iteration = 1;
 
 		int max_iter = 40;
-		
+
 		double bestFitness = Double.MAX_VALUE;
 		double[] bestPosition = new double[6];
 
 		int n0 = 20;
-		
+
 		bestFitness = particles[ModifiedNR7.findBestInd(particles)].getFitness();
 		bestPosition = particles[ModifiedNR7.findBestInd(particles)].getPosition().clone();
 
@@ -86,13 +86,14 @@ public class ModifiedNR8 {
 			boolean flag = false;
 			for (Particle particle : particles) {
 
-				for (Particle particle2 : particles) 
+				for (Particle particle2 : particles)
 					mnr8.experimentParticle(particle2, n0);
 
 //Case1
-				int budget = 50;
-				mnr8.makeAdditionalReps0(particles, budget);
-
+				
+//				int budget = 50; 
+//				mnr8.makeAdditionalReps0(particles, budget);
+				 
 //Case 2
 
 //				int budget = 50;
@@ -100,9 +101,9 @@ public class ModifiedNR8 {
 
 //Case 3
 //
-//				int budget = 50;
-//				Res res = ModifiedNR7.findCase(particles, bestFitness);
-//				mnr8.makeAdditionalReps3(particles, budget, bestFitness, res, best);
+				int budget = 50;
+				Res res = ModifiedNR7.findCase(particles, bestFitness);
+				mnr8.makeAdditionalReps3(particles, budget, bestFitness, res, best);
 
 				bestFitness = best.getFitness();
 
@@ -282,16 +283,7 @@ public class ModifiedNR8 {
 
 					}
 
-					double fitness = Math.abs(PQLossLoad.get(0)) + Math.abs(PQLossLoad.get(1));
-					for (Bus b : buses) {
-						fitness = fitness + Math.abs(1 - b.voltage.getValue());
-
-					}
-
-					if (ModifiedNR.sumMatrix(fx0) > 1E-4)
-						fitness += ModifiedNR.sumMatrix(fx0);
-
-					fitness += (Math.abs(1 - wi) * 10) * buses.size();
+					double fitness = ModifiedNR.evaluate(buses, PQLossLoad, wi, position, fx0);
 
 					particles[f].sol.fitness.add(fitness);
 
@@ -434,16 +426,7 @@ public class ModifiedNR8 {
 
 					}
 
-					double fitness = Math.abs(PQLossLoad.get(0)) + Math.abs(PQLossLoad.get(1));
-					for (Bus b : buses) {
-						fitness = fitness + Math.abs(1 - b.voltage.getValue());
-
-					}
-
-					if (ModifiedNR.sumMatrix(fx0) > 1E-4)
-						fitness += ModifiedNR.sumMatrix(fx0);
-
-					fitness += (Math.abs(1 - wi) * 10) * buses.size();
+					double fitness = ModifiedNR.evaluate(buses, PQLossLoad, wi, position, fx0);
 
 					particles[f].sol.fitness.add(fitness);
 
@@ -459,7 +442,7 @@ public class ModifiedNR8 {
 		Particle[] particles = new Particle[npar];
 		Random random = new Random();
 		for (int i = 0; i < npar; i++) {
-			double[] initial5 = this.construct();
+			double[] initial5 = this.construct2();
 			double[] speed = new double[initial5.length];
 			for (int j = 0; j < speed.length; j++) {
 				speed[j] = random.nextDouble();
@@ -600,16 +583,7 @@ public class ModifiedNR8 {
 
 // Fitness calculation and update of the fitness ArrayList
 
-			double fitness = Math.abs(PQLossLoad.get(0)) + Math.abs(PQLossLoad.get(1));
-			for (Bus b : buses) {
-				fitness = fitness + Math.abs(1 - b.voltage.getValue());
-
-			}
-
-			if (ModifiedNR.sumMatrix(fx0) > 1E-4)
-				fitness += ModifiedNR.sumMatrix(fx0);
-
-			fitness += (Math.abs(1 - wi) * 10) * buses.size();
+			double fitness = ModifiedNR.evaluate(buses, PQLossLoad, wi, position, fx0);
 
 			p.sol.fitness.add(fitness);
 
@@ -619,7 +593,7 @@ public class ModifiedNR8 {
 
 	}
 
-	public double[] construct() {
+	public double[] construct2() {
 
 		double[][] xadmittances = this.xadmittances;
 		double[][] radmittances = this.radmittances;
@@ -652,14 +626,14 @@ public class ModifiedNR8 {
 			flag = true;
 
 			Jacobian = null;
-			
+
 			buses = new ArrayList<Bus>();
 			buses.add(new Bus(1, 0, params, -normal.sample()));
 			buses.add(new Bus(1, 2, params, generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 			buses.add(new Bus(1, 4, params, -normal.sample()));
-			buses.add(new Bus(2, 6, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
-			buses.add(new Bus(2, 8, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
-			buses.add(new Bus(2, 10, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
+			buses.add(new Bus(2, 6, params, 0, 0, random.nextDouble(), random.nextDouble(), 3.0));
+			buses.add(new Bus(2, 8, params, 0, 0, random.nextDouble(), random.nextDouble(), 3.0));
+			buses.add(new Bus(2, 10, params, 0, 0, random.nextDouble(), random.nextDouble(), 3.0));
 
 			int nofDroop = 0;
 			for (Bus b : buses) {
@@ -924,16 +898,7 @@ public class ModifiedNR8 {
 
 					}
 
-					double fitness = Math.abs(PQLossLoad.get(0)) + Math.abs(PQLossLoad.get(1));
-					for (Bus b : buses) {
-						fitness = fitness + Math.abs(1 - b.voltage.getValue());
-
-					}
-
-					if (ModifiedNR.sumMatrix(fx0) > 1E-4)
-						fitness += ModifiedNR.sumMatrix(fx0);
-
-					fitness += (Math.abs(1 - wi) * 10) * buses.size();
+					double fitness = ModifiedNR.evaluate(buses, PQLossLoad, wi, position, fx0);
 
 					particles[f].sol.fitness.add(fitness);
 
@@ -979,7 +944,7 @@ public class ModifiedNR8 {
 			flag = true;
 
 			Jacobian = null;
-			
+
 			double[] position = p.getPosition();
 			buses = new ArrayList<Bus>();
 			buses.add(new Bus(1, 0, params, -normal.sample()));
@@ -1069,16 +1034,7 @@ public class ModifiedNR8 {
 
 			}
 
-			double fitness = Math.abs(PQLossLoad.get(0)) + Math.abs(PQLossLoad.get(1));
-			for (Bus b : buses) {
-				fitness = fitness + Math.abs(1 - b.voltage.getValue());
-
-			}
-
-			if (ModifiedNR.sumMatrix(fx0) > 1E-4)
-				fitness += ModifiedNR.sumMatrix(fx0);
-
-			fitness += (Math.abs(1 - wi) * 10) * buses.size();
+			double fitness = ModifiedNR.evaluate(buses, PQLossLoad, wi, position, fx0);
 
 			p.sol.fitness.add(fitness);
 

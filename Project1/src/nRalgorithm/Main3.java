@@ -1,15 +1,30 @@
 package nRalgorithm;
+import java.io.File;
+import java.io.IOException;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Main3 {
 
-	public static void main(String[] args) {
-		double [] d = new double [] {1,2,3};
+	public static void main(String[] args) throws IOException  {
 		
-		double [] d2 = d.clone();
 		
-		d2[1] = 1000;
-		
-		System.out.println(d[1]);
+	      try {
+	    	  String fileName = new SimpleDateFormat("yyyyMMddHHmmss'.txt'").format(new Date());
+	    	  fileName = "zoutput_" + fileName ;
+	          File myObj = new File(fileName);
+	          if (myObj.createNewFile()) {
+	            System.out.println("File created: " + myObj.getName());
+	          } else {
+	            System.out.println("File already exists.");
+	          }
+	        } catch (IOException e) {
+	          System.out.println("An error occurred.");
+	          e.printStackTrace();
+	        }
+
+
 		
 	}
 

@@ -1681,5 +1681,35 @@ public class ModifiedNR {
 		return sum;
 
 	}
+	
+	public static double evaluate(ArrayList<Bus> buses,ArrayList<Double> pqLossLoad, double wi,double [] position,RealMatrix fx0) {
+
+		
+		double fitness = Math.abs(pqLossLoad.get(0)) + Math.abs(pqLossLoad.get(1));
+		for (Bus b : buses) {
+			fitness = fitness + Math.abs(1 - b.voltage.getValue());
+
+		}
+
+		for(int i =0 ; i<position.length;i++) {
+			if(position[i]<0)
+				fitness -= 100*position[i];
+			else if(position[i]>1)
+				fitness += 100*position[i];
+										
+		}
+		
+		if (ModifiedNR.sumMatrix(fx0) > 1E-4)
+			fitness += ModifiedNR.sumMatrix(fx0);
+
+		fitness += (Math.abs(1 - wi) * 10) * buses.size();
+
+		
+		return fitness;
+	
+
+		
+	}
+	
 
 }
