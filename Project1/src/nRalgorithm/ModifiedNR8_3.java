@@ -20,7 +20,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 public class ModifiedNR8_3 {
-	public static final double loadMean = 0.3;
+	public static final double loadMean = 0.25;
 
 	double[][] xadmittances;
 	double[][] radmittances;
@@ -57,19 +57,15 @@ public class ModifiedNR8_3 {
 	public static void main(String[] args) {
 		ModifiedNR8_3 mnr8 = new ModifiedNR8_3();
 
-		int npar = 5;
+		int npar = 10;
+		int max_iter = 100;
+		int n0 = 10;
+		double[] bestPosition = new double[4];
 
 		Particle[] particles = mnr8.initializeParticles(npar);
 
 		int iteration = 1;
-
-		int max_iter = 40;
-
 		double bestFitness = Double.MAX_VALUE;
-
-		double[] bestPosition = new double[4];
-
-		int n0 = 20;
 
 		bestFitness = particles[ModifiedNR7.findBestInd(particles)].getFitness();
 		bestPosition = particles[ModifiedNR7.findBestInd(particles)].getPosition().clone();
@@ -90,19 +86,18 @@ public class ModifiedNR8_3 {
 				for (Particle particle2 : particles)
 					mnr8.experimentParticle(particle2, n0);
 
+				int budget = 150;
 //Case1
 
-				int budget = 50; 
-				mnr8.makeAdditionalReps0(particles, budget);
+//				mnr8.makeAdditionalReps0(particles, budget);
 
 //Case 2
 
-//				int budget = 50;
-//				mnr8.makeAdditionalReps2(particles, budget, bestFitness);
+
+				mnr8.makeAdditionalReps2(particles, budget, bestFitness);
 
 //Case 3
-//
-//				int budget = 50;
+
 //				Res res = ModifiedNR7.findCase(particles, bestFitness);
 //				mnr8.makeAdditionalReps3(particles, budget, bestFitness, res, best);
 
@@ -140,12 +135,12 @@ public class ModifiedNR8_3 {
 
 			if (flag) {
 				ModifiedNR7.printBest(bestPosition, iteration);
-				System.out.printf("%.4f\n", bestFitness);
+				System.out.printf("%.4f\t%.4f\n",best.sol.getMean(),best.sol.getSD());
 			} else {
-				if (iteration % 100 != 0)
-					System.out.print(".");
-				else
-					System.out.println();
+//				if (iteration % 100 != 0)
+//					System.out.print(".");
+//				else
+//					System.out.println();
 			}
 		}
 
@@ -924,7 +919,7 @@ public class ModifiedNR8_3 {
 		RealMatrix prevX1 = null;
 		RealMatrix prevfx0 = null;
 		double prev_Mismatches = Double.MAX_VALUE;
-		Random random = new Random();
+
 		boolean flag = true;
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 		long cur = System.currentTimeMillis();

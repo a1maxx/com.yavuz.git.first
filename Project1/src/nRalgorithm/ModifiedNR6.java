@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.distribution.WeibullDistribution;
+
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.NullArgumentException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;

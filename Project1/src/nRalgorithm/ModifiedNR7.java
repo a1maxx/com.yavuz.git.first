@@ -1,6 +1,6 @@
 package nRalgorithm;
 
-import java.util.ArrayList;
+
 
 import java.util.Random;
 
@@ -125,8 +125,12 @@ public class ModifiedNR7 {
 	public static void printBest(double[] best, int f) {
 		System.out.printf("\nBest position found at iteration : %d \t", f);
 		for (int i = 0; i < best.length; i++) {
-			System.out.printf("%.6f,\t", best[i]);
+			if (i + 1 != best.length)
+				System.out.printf("%.6f,\t", best[i]);
+			else
+				System.out.printf("%.6f\t", best[i]);
 		}
+
 	}
 
 	public static int findBestInd(Particle[] particles) {

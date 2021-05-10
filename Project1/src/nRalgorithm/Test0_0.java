@@ -22,18 +22,18 @@ import org.apache.commons.math3.linear.RealMatrix;
 public class Test0_0 {
 
 	public static void main(String[] args) {
-		int rep = 100;
-		
-		double loadMean = 0.1;
-		
-		Test0 tst =  new Test0();
-		
+		int rep = 25;
+
+		double loadMean = 0.25;
+
+		Test0_0 tst = new Test0_0();
+
 		ModifiedNR8 mnr8 = new ModifiedNR8();
 		double[][] xadmittances = mnr8.xadmittances;
 		double[][] radmittances = mnr8.radmittances;
 
 		WeibullDistribution wb = new WeibullDistribution(7.5, 3.5);
-		
+
 		ArrayList<Double> PQLossLoad = null;
 
 		RealMatrix X1 = null;
@@ -43,11 +43,18 @@ public class Test0_0 {
 
 		ArrayList<Double> fits = new ArrayList<Double>();
 		ArrayList<Double> freqs = new ArrayList<Double>();
-		ArrayList<ArrayList<Double>> bV =  new ArrayList<ArrayList<Double>>(rep);
-		for(int i=0; i < rep; i++) {
-		    bV.add(new ArrayList<Double>());
+		ArrayList<ArrayList<Double>> bV = new ArrayList<ArrayList<Double>>(rep);
+		ArrayList<ArrayList<Double>> bP = new ArrayList<ArrayList<Double>>(rep);
+		ArrayList<ArrayList<Double>> bQ = new ArrayList<ArrayList<Double>>(rep);
+		ArrayList<Double> bPLoss = new ArrayList<Double>();
+		ArrayList<Double> bQLoss = new ArrayList<Double>();
+
+		for (int i = 0; i < rep; i++) {
+			bV.add(new ArrayList<Double>());
+			bP.add(new ArrayList<Double>());
+			bQ.add(new ArrayList<Double>());
 		}
-		
+
 		double prev_Mismatches = Double.MAX_VALUE;
 
 		boolean flag = true;
@@ -56,17 +63,28 @@ public class Test0_0 {
 
 		NormalDistribution normal = new NormalDistribution(loadMean, loadMean * 0.20);
 		int cv = 0;
-		String method = "CONV_";
-//		double[] position = {0.374205,	0.778976,	0.007863,	0.875875,	0.343483,	0.049583}; // PSO1
-//		double[] position = {0.090967,	0.620688,	0.123440,	0.432060,	0.164542,	0.45944}; // PSO2
-//		double[] position = {0.212889,	0.012893,	0.145431,	0.590238,	0.377057,	0.064886}; // PSO3
-//		double[] position = {0.1388,0.1388,0.1388,	0.972,	0.972,	0.972}; // oOnventional
-		double[] position = {0.05551,0.05551,0.05551,0.05559,0.05559,0.05559};
+		String method = "PSO1_";
+//		double[] position = { 0.000157, 0.439875, 0.828400, 0.017292 }; // PSO1
+		double[] position = {0.001141,	0.705643,	0.085975,	0.380136}; // PSO1__iter80_npar10_budget50
+//		double[] position = {0.659190,	0.000189,	0.003205,	0.108217};// PSO2__iter100_npar30_budget50
 		
+
+//		double[] position = {0.004145,	0.008543,	0.056562,	0.458590}; // PSO2__iter80_npar10_budget50
+//		double[] position = {0.000185,	0.178681,	0.005492,	0.366317};// PSO2__iter100_npar30_budget50
+//		double[] position = {0.003576,	0.618300,	0.013196,	0.102596};// PSO2_npar10_niter100_n10_budget150
+		
+		
+//		double[] position = {0.000594,	0.414312,	0.389496,	0.005235}; // PSO3__iter80_npar10_budget50
+//		double[] position = {0.761462,	0.000132,	0.722829,	0.001252}; // PSO3__iter100_npar30_budget50
+//		double[] position = {0.896687,	0.000196,	0.352531,	0.011333}; // PSO3_npar10_niter100_n10_budget150
+
+
+//		double[] position = {0.1679167,0.1119444,0.1654167,0.1102778}; // Conventional_newSetup
+
 		for (int k = 0; k < rep; k++) {
 			int params = 12;
 			int order = 2;
-			
+
 			X1 = null;
 			fx0 = null;
 			wi = 1.0;
@@ -75,14 +93,14 @@ public class Test0_0 {
 			flag = true;
 
 			Jacobian = null;
-	
+
 			buses = new ArrayList<Bus>();
 			buses.add(new Bus(1, 0, params, -normal.sample()));
-			buses.add(new Bus(1, 2, params, ModifiedNR8.generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
+			buses.add(new Bus(1, 2, params, -normal.sample()));
 			buses.add(new Bus(1, 4, params, -normal.sample()));
-			buses.add(new Bus(2, 6, params, 0, 0, position[0], position[3], 3.0));
-			buses.add(new Bus(2, 8, params, 0, 0, position[1], position[4], 3.0));
-			buses.add(new Bus(2, 10, params, 0, 0, position[2], position[5], 3.0));
+			buses.add(new Bus(2, 6, params, 0, 0, position[0], position[2], 0.8));
+			buses.add(new Bus(1, 8, params, ModifiedNR8.generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
+			buses.add(new Bus(2, 10, params, 0, 0, position[1], position[3], 1.2));
 
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -160,7 +178,7 @@ public class Test0_0 {
 
 			if (!flag) {
 				double fitness = Math.abs(PQLossLoad.get(0)) + Math.abs(PQLossLoad.get(1));
-				for (Bus b : buses) 
+				for (Bus b : buses)
 					fitness = fitness + Math.abs(1.0 - b.voltage.getValue());
 
 				if (ModifiedNR.sumMatrix(fx0) > 1E-4)
@@ -169,64 +187,75 @@ public class Test0_0 {
 				fitness += Math.abs(1 - wi);
 				fits.add(fitness);
 				freqs.add(wi);
-			
-				
-				for(Bus b:buses) {
+				bPLoss.add(Math.abs(PQLossLoad.get(0)));
+				bQLoss.add(Math.abs(PQLossLoad.get(1)));
+
+				for (Bus b : buses) {
 					bV.get(k).add(b.voltage.getValue());
-					
+					bP.get(k).add(b.p);
+					bQ.get(k).add(b.q);
 				}
-				
-				
+
 			}
 
 		}
-		
 
-
-		tst.printTo(fits, freqs, position,bV,method);
+		tst.printTo(fits, freqs, position, bV, method,bP,bQ);
 		System.out.println(cv);
 
 	}
 
-	public void printTo(ArrayList<Double> fits, ArrayList<Double> freqs, double[] position,ArrayList<ArrayList<Double>> bV,String method) {
+	public void printTo(ArrayList<Double> fits, ArrayList<Double> freqs, double[] position,
+			ArrayList<ArrayList<Double>> bV, String method, ArrayList<ArrayList<Double>> bP,
+			ArrayList<ArrayList<Double>> bQ) {
 
-		  String fileName = new SimpleDateFormat("yyyyMMddHHmmss'.txt'").format(new Date());
-		   try {
-		    	
-		    	  fileName = "zoutput_" + method + fileName  ;
-		          File myObj = new File(fileName);
-		          if (myObj.createNewFile()) {
-		            System.out.println("File created: " + myObj.getName());
-		          } else {
-		            System.out.println("File already exists.");
-		          }
-		        } catch (IOException e) {
-		          System.out.println("An error occurred.");
-		          e.printStackTrace();
-		        }
-		
-		
+		String fileName = new SimpleDateFormat("yyyyMMddHHmmss'.txt'").format(new Date());
+		try {
+
+			fileName = "zoutput_" + method + fileName;
+			File myObj = new File(fileName);
+			if (myObj.createNewFile()) {
+				System.out.println("File created: " + myObj.getName());
+			} else {
+				System.out.println("File already exists.");
+			}
+		} catch (IOException e) {
+			System.out.println("An error occurred.");
+			e.printStackTrace();
+		}
+
 		try {
 			FileWriter myWriter = new FileWriter(fileName);
 			PrintWriter printWriter = new PrintWriter(myWriter);
-			StringBuilder sb =  new StringBuilder();
+			StringBuilder sb = new StringBuilder();
 
 			printWriter.print("\n Replication \t FitnessValue \t Frequency");
+
+			for (int i = 0; i < bV.get(0).size(); i++)
+				sb.append("\tBus" + (i + 1));
 			
-			for(int i=0;i<bV.get(0).size();i++)
-				sb.append("\tBus"+(i+1));
+			for (int i = 0; i < bP.get(0).size(); i++)
+				sb.append("\tBus" + (i + 1)+"_P");
 			
-			printWriter.print(sb.toString());	
-		
+			for (int i = 0; i < bQ.get(0).size(); i++)
+				sb.append("\tBus" + (i + 1)+"_Q");
 			
-			for(Double d: fits) {
-				printWriter.printf("\n%s %.5f\t%.5f","Replication" + fits.indexOf(d)+"\t" ,d,freqs.get(fits.indexOf(d)));
-				for(Double f:bV.get(fits.indexOf(d))) {
-					printWriter.printf("\t%.5f ",f);
+			printWriter.print(sb.toString());
+
+			for (Double d : fits) {
+				printWriter.printf("\n%s %.5f\t%.5f", "Replication" + fits.indexOf(d) + "\t", d,
+						freqs.get(fits.indexOf(d)));
+				for (Double f : bV.get(fits.indexOf(d))) {
+					printWriter.printf("\t%.5f ", f);
+				}
+				for (Double f : bP.get(fits.indexOf(d))) {
+					printWriter.printf("\t%.5f ", f);
+				}
+				for (Double f : bQ.get(fits.indexOf(d))) {
+					printWriter.printf("\t%.5f ", f);
 				}
 			}
-			
-			
+
 			myWriter.close();
 			System.out.println("Successfully wrote to the file.");
 		} catch (IOException e) {

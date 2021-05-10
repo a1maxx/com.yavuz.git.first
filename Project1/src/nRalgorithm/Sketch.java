@@ -17,8 +17,11 @@ public class Sketch {
 
 	public static void main(String[] args) {
 		
-		
-		
+//		main(null);
+		System.out.println("nift".equals("nift"));
+		int f = 1/0;
+//		System.out.println(1/0);
+		System.out.println("nifty".getClass().getSimpleName());
 //		ArrayList<Double> unknowns = new ArrayList<Double>();
 //		if (true) {
 //			Double temp = 1.0;

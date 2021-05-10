@@ -216,6 +216,9 @@ public class Test0 {
 			for(int i=0;i<bV.get(0).size();i++)
 				sb.append("\tBus"+(i+1));
 			
+			for(int i=0;i<bV.get(0).size();i++)
+				sb.append("\tBus"+(i+1)+"_P");
+			
 			printWriter.print(sb.toString());	
 		
 			
