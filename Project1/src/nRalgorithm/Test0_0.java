@@ -22,7 +22,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 public class Test0_0 {
 
 	public static void main(String[] args) {
-		int rep = 25;
+		int rep = 1000;
 
 		double loadMean = 0.25;
 
@@ -63,13 +63,14 @@ public class Test0_0 {
 
 		NormalDistribution normal = new NormalDistribution(loadMean, loadMean * 0.20);
 		int cv = 0;
-		String method = "PSO1_";
+		String method = "CONV_";
 //		double[] position = { 0.000157, 0.439875, 0.828400, 0.017292 }; // PSO1
-		double[] position = {0.001141,	0.705643,	0.085975,	0.380136}; // PSO1__iter80_npar10_budget50
-//		double[] position = {0.659190,	0.000189,	0.003205,	0.108217};// PSO2__iter100_npar30_budget50
-		
+//		double[] position = {0.001141,	0.705643,	0.085975,	0.380136}; // EAPSO__iter80_npar10_budget50
+//		double[] position = {0.659190,	0.000189,	0.003205,	0.108217};// EAPSO__iter100_npar30_budget50
+//		double[] position = {0.395589,	0.000052,	0.001704,	0.489509};// EAPSO_npar10_niter100_n10_budget150
 
-//		double[] position = {0.004145,	0.008543,	0.056562,	0.458590}; // PSO2__iter80_npar10_budget50
+		
+//		double[] position = {0.004145,	0.008543,	0.056562,	0.458590}; // PSO2_ _iter80_npar10_budget50
 //		double[] position = {0.000185,	0.178681,	0.005492,	0.366317};// PSO2__iter100_npar30_budget50
 //		double[] position = {0.003576,	0.618300,	0.013196,	0.102596};// PSO2_npar10_niter100_n10_budget150
 		
@@ -79,7 +80,7 @@ public class Test0_0 {
 //		double[] position = {0.896687,	0.000196,	0.352531,	0.011333}; // PSO3_npar10_niter100_n10_budget150
 
 
-//		double[] position = {0.1679167,0.1119444,0.1654167,0.1102778}; // Conventional_newSetup
+		double[] position = {0.1679167/2,0.1119444/2,0.1654167/2,0.1102778/2}; // Conventional_newSetup
 
 		for (int k = 0; k < rep; k++) {
 			int params = 12;
@@ -200,14 +201,14 @@ public class Test0_0 {
 
 		}
 
-		tst.printTo(fits, freqs, position, bV, method,bP,bQ);
+		tst.printTo(fits, freqs, position, bV, method,bP,bQ,bPLoss,bQLoss);
 		System.out.println(cv);
 
 	}
 
 	public void printTo(ArrayList<Double> fits, ArrayList<Double> freqs, double[] position,
 			ArrayList<ArrayList<Double>> bV, String method, ArrayList<ArrayList<Double>> bP,
-			ArrayList<ArrayList<Double>> bQ) {
+			ArrayList<ArrayList<Double>> bQ,ArrayList<Double> bPLoss,ArrayList<Double> bQLoss) {
 
 		String fileName = new SimpleDateFormat("yyyyMMddHHmmss'.txt'").format(new Date());
 		try {
@@ -240,6 +241,9 @@ public class Test0_0 {
 			for (int i = 0; i < bQ.get(0).size(); i++)
 				sb.append("\tBus" + (i + 1)+"_Q");
 			
+			printWriter.print("\tPLoss\tQLoss");
+		
+			
 			printWriter.print(sb.toString());
 
 			for (Double d : fits) {
@@ -254,6 +258,8 @@ public class Test0_0 {
 				for (Double f : bQ.get(fits.indexOf(d))) {
 					printWriter.printf("\t%.5f ", f);
 				}
+				printWriter.printf("\t%.5f\t%.5f",bPLoss.get(fits.indexOf(d)),bQLoss.get(fits.indexOf(d)));
+				
 			}
 
 			myWriter.close();

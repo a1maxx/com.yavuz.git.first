@@ -77,7 +77,9 @@ public class ModifiedNR8_3 {
 			Particle best = new Particle();
 			best.setPosition(bestPosition);
 			best.setFitness(bestFitness);
-			mnr8.addSamples(best, n0);
+			
+			mnr8.addSamples(best, n0); //I am not sure about this ?
+			
 			bestFitness = best.getFitness();
 
 			boolean flag = false;
@@ -92,7 +94,6 @@ public class ModifiedNR8_3 {
 //				mnr8.makeAdditionalReps0(particles, budget);
 
 //Case 2
-
 
 				mnr8.makeAdditionalReps2(particles, budget, bestFitness);
 
