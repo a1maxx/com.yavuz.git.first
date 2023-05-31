@@ -83,7 +83,7 @@ public class ModifiedNR6 {
 			buses.get(0).delta = new DerivativeStructure(6, 2, 0, 0.0);
 
 //			buses.add(new Bus(2, 2, 6, 0, 0, 0.05, 0.85, 3.0));
-			buses.add(new Bus(2, 2, 6, 0, 0, 0.14709, 0.35614, 3.0));
+//			buses.add(new Bus(2, 2, 6, 0, 0, 0.14709, 0.35614, 3.0));
 			buses.add(new Bus(1, 4, 6, 0.20, 0.01));
 
 		

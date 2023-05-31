@@ -6,6 +6,7 @@ import java.util.Collections;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.solvers.BrentSolver;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -44,7 +45,7 @@ public class ModifiedNR {
 			if (b.type == 2) {
 //				b.p = Math.max(Math.min(0.5*( ((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue())) ),b.qMax),0);		
 //				b.q = Math.max(Math.min(0.5*( ((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi)) ),b.qMax),0);
-				b.p = Math.min(0.5 * (((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue()))), b.qMax);
+				b.p = Math.min(0.5 * (((1 / b.mp) * (w0 - wi)) + ((1 / b.nq) * (v0 - b.voltage.getValue()))), b.pMax);
 				b.q = Math.min(0.5 * (((1 / b.nq) * (v0 - b.voltage.getValue())) - ((1 / b.mp) * (w0 - wi))), b.qMax);
 			}
 		}
@@ -71,8 +72,8 @@ public class ModifiedNR {
 		double v0 = 1.0;
 		double w0 = 1.0;
 
-		double alpha = 0.0;
-		double beta = 0.0;
+		double alpha = 1.0;
+		double beta = 1.0;
 		double kpf = 1.0;
 		double kqf = -1.0;
 
@@ -1685,7 +1686,8 @@ public class ModifiedNR {
 	public static double evaluate(ArrayList<Bus> buses,ArrayList<Double> pqLossLoad, double wi,double [] position,RealMatrix fx0) {
 
 		
-		double fitness = Math.abs(pqLossLoad.get(0)) + Math.abs(pqLossLoad.get(1));
+		double fitness = 50*buses.size()*(10*Math.abs(pqLossLoad.get(0)) + Math.abs(pqLossLoad.get(1)));
+		
 		for (Bus b : buses) {
 			fitness = fitness + Math.abs(1 - b.voltage.getValue());
 
@@ -1694,8 +1696,8 @@ public class ModifiedNR {
 		for(int i =0 ; i<position.length;i++) {
 			if(position[i]<0)
 				fitness -= 100*position[i];
-			else if(position[i]>1)
-				fitness += 100*position[i];
+//			else if(position[i]>1)
+//				fitness += 100*position[i];
 										
 		}
 		
@@ -1711,5 +1713,104 @@ public class ModifiedNR {
 		
 	}
 	
+	public static double evaluate2(ArrayList<Bus> buses,ArrayList<Double> pqLossLoad, double wi,double [] position,RealMatrix fx0) {
+
+		
+		double fitness = 200*(10*Math.abs(pqLossLoad.get(0)) + Math.abs(pqLossLoad.get(1)));
+		
+		for (Bus b : buses) {
+			if(b.voltage.getValue()<0.95)
+				fitness += 100*Math.abs(0.95-b.voltage.getValue());
+			else if(b.voltage.getValue()>1.05)
+				fitness += 100* Math.abs(b.voltage.getValue()-1.05);
+
+		}
+		
+		if(wi<0.995)
+			fitness += 1000*Math.abs(0.995-wi);
+		else if(wi>1.005)
+			fitness += 1000*Math.abs(wi-1.005);
+		
+		for(int i =0 ; i<position.length;i++) {
+			if(position[i]<0)
+				fitness -= 100*position[i];
+			else if(position[i]>1)
+				fitness += 100*position[i];
+										
+		}
+		
+		if (ModifiedNR.sumMatrix(fx0) > 1E-4)
+			fitness += ModifiedNR.sumMatrix(fx0);
+
+	
+		
+		return fitness;
+	
+
+		
+	}
+
+	public static double evaluate3(ArrayList<Bus> buses,ArrayList<Double> pqLossLoad, double wi,double [] position,RealMatrix fx0) {
+
+		ArrayList<Double> vals = new ArrayList<Double>();
+
+//		double fitness = 200*(10*Math.abs(pqLossLoad.get(0)) + Math.abs(pqLossLoad.get(1)));
+		
+		double fitness; 
+		
+		for (Bus b : buses) {
+			if(b.voltage.getValue()<0.95)
+				vals.add(Math.abs(0.95-b.voltage.getValue()));
+			else if(b.voltage.getValue()>1.05)
+				vals.add(Math.abs(b.voltage.getValue()-1.05));
+
+		}
+		
+		if(wi<0.995)
+			vals.add(Math.abs(0.995-wi));
+		else if(wi>1.005)
+			vals.add(Math.abs(wi-1.005));
+		
+//		for(int i =0 ; i<position.length;i++) {
+//			if(position[i]<0)
+//				vals.add(-position[i]);
+//			else if(position[i]>1)
+//				vals.add(position[i]-1);									
+//		}
+		
+		
+		if(vals.isEmpty()) 
+			fitness = Math.atan(10*Math.abs(pqLossLoad.get(0)) + Math.abs(pqLossLoad.get(1))) - Math.PI/2;
+		else
+			fitness = Collections.max(vals);
+		
+		
+		if (ModifiedNR.sumMatrix(fx0) > 1E-3)
+			fitness += ModifiedNR.sumMatrix(fx0)*1e2;
+
+	
+		
+		return fitness;
+	
+		
+	}
+	
+	public static boolean checkAdequacy(ArrayList<Bus> buses, double SGMAX) {
+
+		double demA = 0;
+		double demR = 0;
+
+		for (Bus b : buses) {
+			if (b.type == 1) {
+				demA += b.nominal_p;
+				demR += b.nominal_q;
+			}
+
+		}
+		double demT = Math.sqrt(Math.pow(demA, 2) + Math.pow(demR, 2));
+		demT += demT * 0.05;
+		return demT > SGMAX;
+
+	}
 
 }

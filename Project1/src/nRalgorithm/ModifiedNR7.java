@@ -123,7 +123,7 @@ public class ModifiedNR7 {
 	}
 
 	public static void printBest(double[] best, int f) {
-		System.out.printf("\nBest position found at iteration : %d \t", f);
+		System.out.printf("\nBest position found at iteration:\t%d \t", f);
 		for (int i = 0; i < best.length; i++) {
 			if (i + 1 != best.length)
 				System.out.printf("%.6f,\t", best[i]);
@@ -425,5 +425,7 @@ public class ModifiedNR7 {
 				+ (randomizePercentage(c2) * (bestPosition[index] - particle.getPosition()[index])));
 
 	}
+	
+
 
 }

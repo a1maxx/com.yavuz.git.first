@@ -23,13 +23,14 @@ public class Bus {
 //	public double initialValue_v = random.nextDouble()*2;
 //	public double initialValue_d = 0.45;
 //	public double initialValue_v = 1.04;
-	public double initialValue_d = 0.0;
+	public double initialValue_d = 0.1;
 	public double initialValue_v = 1.0;
 	boolean slack = false;
 	Complex cVolt;
 	double mp;
 	double nq;
 	double qMax=0.0;
+	double pMax= 0.0;
 
 	// Constructor of the bus objects
 	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q) {
@@ -50,6 +51,9 @@ public class Bus {
 		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
 
 	}
+	
+
+	
 
 	Bus(int type, double[][] admittance, double[][] theta, int index, double P, double Q,double mp,double nq) {
 		this.type = type;
@@ -218,7 +222,7 @@ public class Bus {
 		return equations;
 	}
 
-	Bus(int type,int index,int params, double P, double Q,double mp,double nq,double qmax) {
+	Bus(int type,int index,int params, double P, double Q,double mp,double nq,double qmax,double pmax) {
 		this.type = type;
 		this.index = index;
 		this.p = P;
@@ -229,18 +233,20 @@ public class Bus {
 		this.voltage = new DerivativeStructure(params, order, index + 1, initialValue_v);
 		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
 		this.qMax = qmax;
+		this.pMax = pmax;
+		
 	}
 	
-	Bus(int type,int index,int params, double P, double Q,double V) {
-		this.type = type;
-		this.index = index;
-		this.p = P;
-		this.q = Q;
-		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
-		this.voltage = new DerivativeStructure(params, order, index + 1, V);
-		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
-
-	}
+//	Bus(int type,int index,int params, double P, double Q,double V) {
+//		this.type = type;
+//		this.index = index;
+//		this.p = P;
+//		this.q = Q;
+//		this.delta = new DerivativeStructure(params, order, index, initialValue_d);
+//		this.voltage = new DerivativeStructure(params, order, index + 1, V);
+//		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
+//
+//	}
 	
 	Bus(int type,int index,int params, double P, double Q) {
 		this.type = type;
@@ -267,6 +273,36 @@ public class Bus {
 		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
 
 	}
+	
+	Bus(int type, int index , int params, double vStart, double dStart, double P) {		
+		double PF = 0.328;
+		this.type = type;
+		this.index = index;
+		this.nominal_p=P;
+		this.nominal_q=P*PF;;
+		this.p = P;
+		this.q = P*PF;
+		this.delta = new DerivativeStructure(params, order, index, dStart);
+		this.voltage = new DerivativeStructure(params, order, index + 1, vStart);
+		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
 
+		
+	}
+
+	Bus(int type,int index,int params, double P, double Q,double mp,double nq,double qmax,double pmax, double vStart,double dStart) {
+		this.type = type;
+		this.index = index;
+		this.p = P;
+		this.q = Q;
+		this.mp = mp;
+		this.nq = nq;
+		this.delta = new DerivativeStructure(params, order, index, dStart);
+		this.voltage = new DerivativeStructure(params, order, index + 1, vStart);
+		this.cVolt = Admittance.polarToComplex(voltage.getValue(), delta.getValue());
+		this.qMax = qmax;
+		this.pMax = pmax;
+		
+	}
+	
 	
 }

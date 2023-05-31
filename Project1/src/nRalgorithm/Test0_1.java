@@ -19,14 +19,22 @@ import org.apache.commons.math3.linear.MatrixDimensionMismatchException;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
+
 public class Test0_1 {
+	public static final double loadMean = 0.015;
+	public static final double loadSD = loadMean * 0.5;
+
 	public static void main(String[] args) {
-		int rep = 1000;
-		double loadMean = 0.1;
+		int rep = 10;
 		
-		Test0_1 tst =  new Test0_1();
+		NormalDistribution normal = new NormalDistribution(loadMean, loadSD);
 		
-		ModifiedNR9 mnr9 = new ModifiedNR9();
+		// shape 7.5 scale 3.5
+		WeibullDistribution wb = new WeibullDistribution(7.5, 3.5);
+		WeibullDistribution wb2 = new WeibullDistribution(7.5, 3.5);
+		Test0_1 tst = new Test0_1();
+
+		ModifiedNR9_1 mnr9 = new ModifiedNR9_1();
 		double[][] xadmittances = mnr9.xadmittances;
 		double[][] radmittances = mnr9.radmittances;
 
@@ -35,60 +43,121 @@ public class Test0_1 {
 		RealMatrix X1 = null;
 		RealMatrix fx0 = null;
 
-		double wi = 1.0;
+		double wi = 1.00;
 
 		ArrayList<Double> fits = new ArrayList<Double>();
 		ArrayList<Double> freqs = new ArrayList<Double>();
-		ArrayList<ArrayList<Double>> bV =  new ArrayList<ArrayList<Double>>(rep);
-		for(int i=0; i < rep; i++) {
-		    bV.add(new ArrayList<Double>());
+		ArrayList<ArrayList<Double>> bV = new ArrayList<ArrayList<Double>>(rep);
+		ArrayList<ArrayList<Double>> bP = new ArrayList<ArrayList<Double>>(rep);
+		ArrayList<ArrayList<Double>> bQ = new ArrayList<ArrayList<Double>>(rep);
+		ArrayList<Double> bPLoss = new ArrayList<Double>();
+		ArrayList<Double> bQLoss = new ArrayList<Double>();
+
+		for (int i = 0; i < rep; i++) {
+			bV.add(new ArrayList<Double>());
+			bP.add(new ArrayList<Double>());
+			bQ.add(new ArrayList<Double>());
 		}
-		
+
 		double prev_Mismatches = Double.MAX_VALUE;
 
 		boolean flag = true;
+		boolean flag2 = false;
 		ArrayList<Bus> buses = new ArrayList<Bus>();
 		double[][] Jacobian = null;
 
-		NormalDistribution normal = new NormalDistribution(loadMean, 0.01);
-		int cv = 0;
 		
-//		double[] position = {1.014962,	-0.170710,	0.890531,	0.381016,	0.024265,	-0.019987,	2.274863,	1.684748,	1.394224,	0.702079,	0.183344,	0.289984};
-//		double[] position = { 0.610640,	1.741969,	-1.643483, 0.904923,	1.968637,	2.187067};
-//		double[] position = {0.1388,	0.1388,0.1388,0.1388,0.1388,0.1388,0.972,0.972,0.972,0.972,0.972,0.972};
-		double[] position = {0.233426,	0.778045,	0.717878,	1.337780,	1.952256,	0.000763,	1.476485,	0.008898,	0.740000,	1.760247,	1.688326,	2.666837};
+		int cv = 0;
+		String method = "12PSO_01501_1000_";
+		
+		
+
+//		double[] position = {0.033231,0.023904,0.017174,0.226110,0.094650,0.085099,0.103928,0.058397}; //PSO without MGCC
+		
+//		double[] position = {0.0125,0.0083,0.0125,0.0083,
+//							 0.1667,0.1111,0.1667,0.1111};  //Honest Conventional
+		
+//		double ff = 0.3;
+//		double[] position = {0.08958335+ff,0.0597222+ff,0.08958335+ff,0.0597222+ff,
+//				0.02083335+ff,0.05138335+ff,0.02083335+ff,0.05138335+ff};  //Honest Conventional 2
+		
+//		double[] position = {0.347567,	0.003632,	1.205042,	1.353550,	
+//							 0.251917,	0.017686,	4.383861,	0.155639}; // PSO with MGCC
+		
+//		double[] position = {0.152746,	-0.082997,	0.810816,	-0.001912,	
+//							0.775256,	1.088017,	0.097911,	0.930320}; //
+			
+//		double[] position = {0.2873,  0.2892,  0.4535,  0.3096,
+//				-0.7215, -0.7207, -0.9999, -0.8626}; // Scenario-based 3 scenarios
+		
+//		double[] position = {0.2895,  0.2942,  0.4253,  0.2849, -0.7728, -0.7808, -1.    ,
+//			       -0.843 }; // Scenario-based 10 scenarios
+		
+//		double[] position = {0.2694,  0.2866,  0.4394,  0.2875, -0.6138, -0.6473, -0.9993,
+//			       -0.6682}; // Scenario-based 20 scenarios
+		
+//		double[] position = {0.3046, 0.3192, 0.4516, 0.3008, 0.5114, 0.5414, 0.752 , 0.5008}; // Scenario-based 40 scenarios
+//		double[] position = {0.29  , 0.2942, 0.4324, 0.2884, 0.3056, 0.3153, 0.4449, 0.3001}; 
+		
+		
+//		double[] position = {0.3064, 0.3168, 0.4514, 0.3006, 0.285 , 0.3003, 0.4105, 0.2751}; // Scenario-based 70 scenarios
+		
+//		double[] position = {.2805, 0.2876, 0.445 , 0.2939, 0.2751, 0.2848, 0.4285, 0.2819}; 
+		
+		
+//		double[] position = {0.377321,	0.205182,	0.211784,	0.326381,	
+//							0.951991,	0.862956,	0.931548,	0.992576}; 
+		
+		
+//		double[] position = {0.3002, 0.3159, 0.462 , 0.3005, 0.3   , 0.3137, 0.4296, 0.3}; /// Scenario 20 0.1SD
+//		double[] position = {0.2423, 0.2574, 0.417 , 0.2712, 0.3   , 0.3009, 0.4724, 0.3084}; /// Scenario 20 0.5SD
+//		
+		double[] position = {0.253066, 0.277613, 0.354755, 0.232186, 0.325022, 0.35594 , 0.4076  , 0.325003}; /// Scenario 20 0.5SD
+
+		
+		
+//		double [] position = {0.649955,	0.466609,	-0.014265,	-0.003010,	0.741878,	0.760559,	0.679216,	-0.040573}; ///PSO
+		
+//		double[] position = {0.033231,0.023904,0.017174,0.226110,0.094650,0.085099,0.103928,0.058397}; //PSO without MGCC
+		
+//		double[] position = {0.009905,	0.017098,0.009905,	0.017098,	0.667299,	0.545103,0.667299,	0.545103};//PSO without MGCC
+		
+//		double[] position = {0.377321,	0.205182,	0.211784,	0.326381,	0.951991,	0.862956,	0.931548,	0.992576};//PSO with MGCC
+		
+
 		
 		for (int k = 0; k < rep; k++) {
+			System.out.println("\t"+k);
 			int params = 24;
 			int order = 2;
-			
+
 			X1 = null;
 			fx0 = null;
 			wi = 1.0;
 
 			prev_Mismatches = Double.MAX_VALUE;
 			flag = true;
-
+			flag2 = false;
 			Jacobian = null;
-		
 
-			WeibullDistribution wb = new WeibullDistribution(7.5, 3.5);
-			WeibullDistribution wb2 = new WeibullDistribution(7.5, 3.5);
+			boolean flag3 = true;
+			while (flag3) {
+				buses = new ArrayList<Bus>();
+				buses.add(new Bus(1, 0, params, Math.min(0,-normal.sample())));//1
+				buses.add(new Bus(1, 2, params, Math.min(0,-normal.sample())));//2
+				buses.add(new Bus(1, 4, params, Math.min(0,-normal.sample())));//3
+				buses.add(new Bus(2, 6, params, 0, 0, position[0], position[4], 0.6, 0.8));//4
+				buses.add(new Bus(1, 8, params, ModifiedNR8.generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));//5
+				buses.add(new Bus(2, 10, params, 0, 0, position[1], position[5], 0.9, 1.2));//6
+				buses.add(new Bus(1, 12, params, Math.min(0,-normal.sample())));//7
+				buses.add(new Bus(1, 14, params, Math.min(0,-normal.sample())));//8
+				buses.add(new Bus(2, 16, params, 0, 0, position[2], position[6], 0.6, 0.8));//9
+				buses.add(new Bus(1, 18, params, Math.min(0,-normal.sample())));//10
+				buses.add(new Bus(1, 20, params, ModifiedNR8.generateFromWind(wb2.sample(), 3.5, 20.0, 14.5, 0.75)));//11
+				buses.add(new Bus(2, 22, params, 0, 0, position[3], position[7], 0.9, 1.2));//12
 
-			buses = new ArrayList<Bus>();
-			buses.add(new Bus(1, 0, params, -normal.sample()));
-			buses.add(new Bus(1, 2, params, ModifiedNR8.generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
-			buses.add(new Bus(1, 4, params, -normal.sample()));
-			buses.add(new Bus(2, 6, params, 0, 0, position[0], position[6], 3.0));
-			buses.add(new Bus(2, 8, params, 0, 0, position[1], position[7], 3.0));
-			buses.add(new Bus(2, 10, params, 0, 0, position[2], position[8], 3.0));
-			buses.add(new Bus(1, 12, params, -normal.sample()));
-			buses.add(new Bus(1, 14, params, ModifiedNR8.generateFromWind(wb2.sample(), 3.5, 20.0, 14.5, 0.75)));
-			buses.add(new Bus(1, 16, params, -normal.sample()));
-			buses.add(new Bus(2, 18, params, 0, 0, position[3], position[9], 3.0));
-			buses.add(new Bus(2, 20, params, 0, 0, position[4], position[10], 3.0));
-			buses.add(new Bus(2, 22, params, 0, 0, position[5], position[11], 3.0));
-
+				flag3 = ModifiedNR.checkAdequacy(buses, 5);
+			}
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
 
@@ -123,13 +192,18 @@ public class Test0_1 {
 				RealMatrix JJ = new Array2DRowRealMatrix(Jacobian);
 
 				try {
-
+//					JA-MNR
+					
 					RealMatrix DELTA = MatrixUtils.inverse(JJ).multiply(fx0).scalarMultiply(-1);
 					double[][] arJacob = ModifiedNR.artificialJacob(deltaVoltageOrders, buses, wi, indexes,
 							radmittances, xadmittances, DELTA, X0);
 					RealMatrix aj = new Array2DRowRealMatrix(arJacob);
 					DELTA = MatrixUtils.inverse(aj).multiply(fx0).scalarMultiply(-1);
 					X1 = X0.add(DELTA);
+					
+//					Conventional
+					
+//					X1 = X0.subtract(MatrixUtils.inverse(JJ).multiply(fx0));
 
 					if (Double.isNaN(X1.getEntry(X1.getRowDimension() - 2, 0))) {
 						System.out.printf("\nAlgorithm diverged, check the line data or the droop coefficients.");
@@ -140,13 +214,13 @@ public class Test0_1 {
 					e.printStackTrace();
 				}
 
-				if (ModifiedNR.sumMatrix(fx0) < 1E-4) {
+				if (ModifiedNR.sumMatrix(fx0) < 1E-3) {
 
 					cv++;
-
+					flag2 = true;
 					flag = false;
 
-				} else if (prev_Mismatches + 1e2 <= ModifiedNR.sumMatrix(fx0)) {
+				} else if (prev_Mismatches + 1e1 <= ModifiedNR.sumMatrix(fx0)) {
 
 					flag = false;
 				} else {
@@ -163,73 +237,88 @@ public class Test0_1 {
 
 			}
 
-			if (!flag) {
-				double fitness = Math.abs(PQLossLoad.get(0)) + Math.abs(PQLossLoad.get(1));
-				for (Bus b : buses) 
-					fitness = fitness + Math.abs(1.0 - b.voltage.getValue());
+			if (!flag && flag2) {
+
+				double fitness = ModifiedNR.evaluate3(buses, PQLossLoad, wi, position, fx0);
 
 				if (ModifiedNR.sumMatrix(fx0) > 1E-4)
 					fitness += ModifiedNR.sumMatrix(fx0);
 
-				fitness += Math.abs(1 - wi);
 				fits.add(fitness);
+
 				freqs.add(wi);
-			
-				
-				for(Bus b:buses) {
+				bPLoss.add(Math.abs(PQLossLoad.get(0)));
+				bQLoss.add(Math.abs(PQLossLoad.get(1)));
+
+				for (Bus b : buses) {
 					bV.get(k).add(b.voltage.getValue());
-					
+					bP.get(k).add(b.p);
+					bQ.get(k).add(b.q);
 				}
-				
-				
+
 			}
 
 		}
-		
 
-		tst.printTo(fits, freqs, position,bV);
+		tst.printTo(fits, freqs, position, bV, method, bP, bQ, bPLoss, bQLoss);
 		System.out.println(cv);
 
 	}
 
-	public void printTo(ArrayList<Double> fits, ArrayList<Double> freqs, double[] position,ArrayList<ArrayList<Double>> bV ) {
-		  String fileName = new SimpleDateFormat("yyyyMMddHHmmss'.txt'").format(new Date());
-		   try {
-		    	
-		    	  fileName = "zoutput_" + fileName ;
-		          File myObj = new File(fileName);
-		          if (myObj.createNewFile()) {
-		            System.out.println("File created: " + myObj.getName());
-		          } else {
-		            System.out.println("File already exists.");
-		          }
-		        } catch (IOException e) {
-		          System.out.println("An error occurred.");
-		          e.printStackTrace();
-		        }
-		
-		
+	public void printTo(ArrayList<Double> fits, ArrayList<Double> freqs, double[] position,
+			ArrayList<ArrayList<Double>> bV, String method, ArrayList<ArrayList<Double>> bP,
+			ArrayList<ArrayList<Double>> bQ, ArrayList<Double> bPLoss, ArrayList<Double> bQLoss) {
+
+		String fileName = new SimpleDateFormat("yyyyMMddHHmmss'.txt'").format(new Date());
+		try {
+
+			fileName = "zoutput_" + method + fileName;
+			File myObj = new File(fileName);
+			if (myObj.createNewFile()) {
+				System.out.println("File created: " + myObj.getName());
+			} else {
+				System.out.println("File already exists.");
+			}
+		} catch (IOException e) {
+			System.out.println("An error occurred.");
+			e.printStackTrace();
+		}
+
 		try {
 			FileWriter myWriter = new FileWriter(fileName);
 			PrintWriter printWriter = new PrintWriter(myWriter);
-			StringBuilder sb =  new StringBuilder();
+			StringBuilder sb = new StringBuilder();
 
-			printWriter.print("\n Replication \t FitnessValue \t Frequency");
-			
-			for(int i=0;i<bV.get(0).size();i++)
-				sb.append("\tBus"+(i+1));
-			
-			printWriter.print(sb.toString());	
-		
-			
-			for(Double d: fits) {
-				printWriter.printf("\n%s %.5f\t%.5f","Replication" + fits.indexOf(d)+"\t" ,d,freqs.get(fits.indexOf(d)));
-				for(Double f:bV.get(fits.indexOf(d))) {
-					printWriter.printf("\t%.5f ",f);
+			printWriter.print("\nReplication\tFitnessValue\tFrequency");
+
+			for (int i = 0; i < bV.get(0).size(); i++)
+				sb.append("\tBus" + (i + 1));
+
+			for (int i = 0; i < bP.get(0).size(); i++)
+				sb.append("\tBus" + (i + 1) + "_P");
+
+			for (int i = 0; i < bQ.get(0).size(); i++)
+				sb.append("\tBus" + (i + 1) + "_Q");
+
+			printWriter.print(sb.toString());
+			printWriter.print("\tPLoss\tQLoss");
+
+			for (Double d : fits) {
+				printWriter.printf("\n%s %.5f\t%.5f", "Replication" + fits.indexOf(d) + "\t", d,
+						freqs.get(fits.indexOf(d)));
+				for (Double f : bV.get(fits.indexOf(d))) {
+					printWriter.printf("\t%.5f ", f);
 				}
+				for (Double f : bP.get(fits.indexOf(d))) {
+					printWriter.printf("\t%.5f ", f);
+				}
+				for (Double f : bQ.get(fits.indexOf(d))) {
+					printWriter.printf("\t%.5f ", f);
+				}
+				printWriter.printf("\t%.5f\t%.5f", bPLoss.get(fits.indexOf(d)), bQLoss.get(fits.indexOf(d)));
+
 			}
-			
-			
+
 			myWriter.close();
 			System.out.println("Successfully wrote to the file.");
 		} catch (IOException e) {
@@ -237,6 +326,5 @@ public class Test0_1 {
 			e.printStackTrace();
 		}
 	}
-
 
 }

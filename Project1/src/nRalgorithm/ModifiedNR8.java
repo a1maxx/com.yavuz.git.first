@@ -657,9 +657,9 @@ public class ModifiedNR8 {
 			buses.add(new Bus(1, 0, params, -normal.sample()));
 			buses.add(new Bus(1, 2, params, generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 			buses.add(new Bus(1, 4, params, -normal.sample()));
-			buses.add(new Bus(2, 6, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
-			buses.add(new Bus(2, 8, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
-			buses.add(new Bus(2, 10, params, 0, 0, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
+			buses.add(new Bus(2, 6, params, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
+			buses.add(new Bus(2, 8, params, (random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
+			buses.add(new Bus(2, 10, params,(random.nextDouble() * 2) - 1, (random.nextDouble() * 3), 3.0));
 
 			int nofDroop = 0;
 			for (Bus b : buses) {
@@ -837,9 +837,9 @@ public class ModifiedNR8 {
 					buses.add(new Bus(1, 0, params, -normal.sample()));
 					buses.add(new Bus(1, 2, params, generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 					buses.add(new Bus(1, 4, params, -normal.sample()));
-					buses.add(new Bus(2, 6, params, 0, 0, position[0], position[3], 3.0));
-					buses.add(new Bus(2, 8, params, 0, 0, position[1], position[4], 3.0));
-					buses.add(new Bus(2, 10, params, 0, 0, position[2], position[5], 3.0));
+					buses.add(new Bus(2, 6, params, position[0], position[3], 3.0));
+					buses.add(new Bus(2, 8, params, position[1], position[4], 3.0));
+					buses.add(new Bus(2, 10, params, position[2], position[5], 3.0));
 
 					ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 					ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);
@@ -985,9 +985,9 @@ public class ModifiedNR8 {
 			buses.add(new Bus(1, 0, params, -normal.sample()));
 			buses.add(new Bus(1, 2, params, generateFromWind(wb.sample(), 3.5, 20.0, 14.5, 0.75)));
 			buses.add(new Bus(1, 4, params, -normal.sample()));
-			buses.add(new Bus(2, 6, params, 0, 0, position[0], position[3], 3.0));
-			buses.add(new Bus(2, 8, params, 0, 0, position[1], position[4], 3.0));
-			buses.add(new Bus(2, 10, params, 0, 0, position[2], position[5], 3.0));
+			buses.add(new Bus(2, 6, params, position[0], position[3], 3.0));
+			buses.add(new Bus(2, 8, params, position[1], position[4], 3.0));
+			buses.add(new Bus(2, 10, params,position[2], position[5], 3.0));
 
 			ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);
 			ArrayList<ArrayList<Integer>> indexes = ModifiedNR.identifyNet(buses);

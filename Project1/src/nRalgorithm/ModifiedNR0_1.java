@@ -71,9 +71,13 @@ public class ModifiedNR0_1 {
 		Jacobian = null;
 
 		buses = new ArrayList<Bus>();
-		buses.add(new Bus(1, 0, 6, -0.2, -0.1));
-		buses.add(new Bus(2, 2, 6, 0, 0, -1.01272, 0.6163, 3.0));
-		buses.add(new Bus(2, 4, 6, 0, 0, -1.01064, 0.5999, 1.2));
+
+		buses.add(new Bus(1, 0, params, -0.14832, -0.02588042));
+		buses.add(new Bus(1, 2, params,  -0.002,0.0006);
+		buses.add(new Bus(1, 4, params, -0.097376019, -0.073323308));
+		buses.add(new Bus(2, 6, params, 0, 0, -0.114902, 0.613651, 1.2));
+		buses.add(new Bus(2, 8, params, 0, 0, -0.119183, 0.141440, 1.5));
+		buses.add(new Bus(2, 10, params, 0, 0, -0.107715, 0.750888, 3.0));
 		
 
 		ArrayList<ArrayList<Integer[]>> deltaVoltageOrders = ModifiedNR.createOrders2(buses);

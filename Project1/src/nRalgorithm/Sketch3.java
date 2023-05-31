@@ -1,6 +1,7 @@
 package nRalgorithm;
 
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -14,31 +15,33 @@ public class Sketch3 {
      NormalDistribution n = new NormalDistribution(0.1,0.01);
 
 		
-		double a[][] = new double[size][size];
-		double b[][] = new double[size][size];
+     ArrayList<Double> vals = new ArrayList<Double>();
+     
+//		double a[][] = new double[size][size];
+//		double b[][] = new double[size][size];
 
-		fillArray(a, b);
-		for (int i = 0; i < a.length; i++) {
-			for (int j = 0; j < a[1].length; j++) {
-				System.out.printf("%.2f\t", a[i][j]);
-			}
-			System.out.println();
-		}
-		System.out.println();
-		for (int i = 0; i < a.length; i++) {
-			for (int j = 0; j < a[1].length; j++) {
-				System.out.printf("%.2f\t", b[i][j]);
-			}
-			System.out.println();
-		}
-		
-		double [] arr = new double [10];
-		
-		
-		for(int i=0 ; i<arr.length;i++) {
-			arr[i]= -n.sample();
-			System.out.println(arr[i]);
-		}
+//		fillArray(a, b);
+//		for (int i = 0; i < a.length; i++) {
+//			for (int j = 0; j < a[1].length; j++) {
+//				System.out.printf("%.2f\t", a[i][j]);
+//			}
+//			System.out.println();
+//		}
+//		System.out.println();
+//		for (int i = 0; i < a.length; i++) {
+//			for (int j = 0; j < a[1].length; j++) {
+//				System.out.printf("%.2f\t", b[i][j]);
+//			}
+//			System.out.println();
+//		}
+//		
+//		double [] arr = new double [10];
+//		
+//		
+//		for(int i=0 ; i<arr.length;i++) {
+//			arr[i]= -n.sample();
+//			System.out.println(arr[i]);
+//		}
 
 
 	}

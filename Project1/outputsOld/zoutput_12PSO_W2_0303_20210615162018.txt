@@ -1,0 +1,4 @@
+
+Replication	FitnessValue	Frequency	PLoss	QLoss
+Replication0	 0.01132	0.99720	0.01543	0.16082
+Replication1	 0.02768	0.99604	0.02970	0.28668
